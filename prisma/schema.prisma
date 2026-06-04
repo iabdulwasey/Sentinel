@@ -1,0 +1,644 @@
+// Bolt Sentinel — data model.
+// SQLite locally; Turso (libSQL) in production via the driver adapter (same provider).
+// Conventions: uuid PKs, createdAt/updatedAt, soft-delete (deletedAt), status/type as
+// String backed by Zod unions in engine/types/, arrays as Json, money as Int micro-USD.
+// Json is for display/provenance payloads only — anything filtered/aggregated is a real column.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Markets & rulesets ──────────────────────────────────────────────────────
+
+model Market {
+  id            String  @id @default(uuid())
+  code          String  @unique // "EE_TALLINN","PL_WARSAW","PT_LISBON","RO_BUCHAREST","NG_LAGOS","ZA_JOHANNESBURG"
+  country       String
+  countryIso2   String
+  cities        Json // string[]
+  regulatorName String
+  regulatorCode String
+  privacyRegime String // GDPR | NDPA | POPIA
+  region        String // EU | NG | ZA
+  timezone      String
+  currency      String
+  locale        String
+  activeRulesetVersion Int @default(1)
+
+  rulesets          RegulatoryRuleset[]
+  authorityRequests AuthorityRequest[]
+  fleetPartners     FleetPartner[]
+  documents         Document[]
+  events            ComplianceEvent[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+}
+
+model RegulatoryRuleset {
+  id          String  @id @default(uuid())
+  marketId    String
+  market      Market  @relation(fields: [marketId], references: [id])
+  version     Int
+  filePath    String
+  contentHash String
+  summary     String
+  changelog   Json?
+  // DB is the single source of truth for all rules: `content` holds the full, Zod-validated
+  // MarketRuleset (seeded from code for the built-in 6; AI-authored for imports). The runtime
+  // registry resolves rules from here — code files are only seed input.
+  content     Json?
+  source      String   @default("SEED") // SEED | IMPORT
+  status      String   @default("ACTIVE") // ACTIVE | SUPERSEDED
+  activatedAt DateTime @default(now())
+  isActive    Boolean  @default(true)
+
+  authorityRequests AuthorityRequest[]
+  riskAssessments   RiskAssessment[]
+  events            ComplianceEvent[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([marketId, version])
+  @@index([marketId, isActive])
+}
+
+// Surface C — Regulation Intake. Holds an uploaded regulation, the AI pipeline artifacts, and
+// the proposed (quarantined) ruleset draft. A draft NEVER reaches the rules table until a human
+// activates it; on activation a RegulatoryRuleset row (content) is written and partners re-flagged.
+model RulesetImport {
+  id        String @id @default(uuid())
+  reference String @unique // "REG-IMP-0001"
+
+  // uploaded source regulation (stored via the storage driver; scalar link, not a partner Document)
+  fileName   String?
+  mimeType   String?
+  storageRef String?
+  sha256     String?
+  byteSize   Int?
+  rawText    String? // text fallback when no file
+
+  // classification / target
+  detectedCountry   String?
+  detectedRegion    String?
+  detectedRegulator String?
+  detectedRegime    String?
+  targetMarketCode  String? // existing market code when this updates a market
+  targetMarketId    String?
+  isNewMarket       Boolean @default(false)
+  proposedVersion   Int?
+
+  // AI pipeline artifacts (persisted JSON)
+  reading        Json? // RegulationReading — sectioned clauses + language
+  classification Json? // RegulationClassification — jurisdiction/market target
+  draftRuleset   Json? // the proposed MarketRuleset (human-editable before activation)
+  validation     Json? // RulesetValidationOutcome — parse + executor dry-run + adversarial check
+  diff           Json? // structural diff vs the current active version (updates only)
+  confidence     Float?
+
+  status       String  @default("RECEIVED") // REGULATION_IMPORT_STATUSES
+  statusReason String?
+  scenarioTag  String?
+
+  // timing / value
+  receivedAt            DateTime  @default(now())
+  processingStartedAt   DateTime?
+  processingEndedAt     DateTime?
+  decidedAt             DateTime?
+  aiElapsedMs           Int?
+  manualBaselineMinutes Int       @default(480)
+
+  reviewedByUserId String? // scalar link — no back-relation
+  reviewNote       String?
+
+  // result of activation
+  activatedRulesetId String?
+  activatedMarketId  String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, receivedAt])
+  @@index([deletedAt])
+}
+
+// ─── Surface A: Authority Request Response ───────────────────────────────────
+
+model AuthorityRequest {
+  id             String             @id @default(uuid())
+  reference      String             @unique // human-facing, e.g. "ARR-EE-0007"
+  marketId       String
+  market         Market             @relation(fields: [marketId], references: [id])
+  rulesetId      String?
+  ruleset        RegulatoryRuleset? @relation(fields: [rulesetId], references: [id])
+  rulesetVersion Int?
+
+  title       String
+  authority   String
+  legalBasis  String?
+  source      String  @default("TEXT") // TEXT | PDF
+  rawText     String?
+  sourceDocId String?
+  sourceDoc   Document? @relation("ARRSourceDoc", fields: [sourceDocId], references: [id])
+
+  // AI pipeline artifacts (persisted JSON)
+  intent          Json?
+  compliancePlan  Json?
+  retrievalPlan   Json?
+  retrievalResult Json?
+  generatedReport Json?
+  selfValidation  Json?
+
+  status       String  @default("RECEIVED") // RECEIVED|PROCESSING|PENDING_REVIEW|APPROVED|REJECTED|NEEDS_CLARIFICATION|DONE
+  statusReason String?
+  scenarioTag  String?
+
+  // timing / value
+  receivedAt            DateTime  @default(now())
+  deadlineAt            DateTime?
+  processingStartedAt   DateTime?
+  processingEndedAt     DateTime?
+  decidedAt             DateTime?
+  manualBaselineMinutes Int       @default(240)
+  aiElapsedMs           Int?
+
+  reviewedByUserId String?
+  reviewedBy       User?   @relation("ARRReviewer", fields: [reviewedByUserId], references: [id])
+  reviewNote       String?
+
+  reportFields ReportField[]
+  aiCalls      AiCallLog[]        @relation("ARRAiCalls")
+  events       ComplianceEvent[]
+  validations  Validation[]
+  pipelineRuns PipelineRun[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([marketId, status])
+  @@index([status, receivedAt])
+  @@index([deletedAt])
+}
+
+model ReportField {
+  id                 String           @id @default(uuid())
+  authorityRequestId String
+  authorityRequest   AuthorityRequest @relation(fields: [authorityRequestId], references: [id], onDelete: Cascade)
+  fieldKey           String
+  label              String
+  value              Json
+  unit               String?
+  classification     String // ANSWERABLE | CAUTIONED | OUT_OF_SCOPE
+  confidence         Float?
+  verified           Boolean  @default(false)
+  provenance         Json // ProvenanceRef[]
+  aiCallId           String?
+  ordering           Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  @@index([authorityRequestId])
+  @@index([fieldKey])
+}
+
+// ─── Surface B1/B2: Fleet partners ───────────────────────────────────────────
+
+model FleetPartner {
+  id             String  @id @default(uuid())
+  reference      String  @unique // "FP-PT-0012"
+  marketId       String
+  market         Market  @relation(fields: [marketId], references: [id])
+  legalName      String
+  tradingName    String?
+  partnerType    String // INDIVIDUAL | COMPANY | FLEET_OPERATOR
+  registrationNo String?
+  contactEmail   String?
+  contactPhone   String?
+  address        Json?
+
+  // onboarding (B1)
+  status    String @default("RECEIVED") // RECEIVED|PROCESSING|PENDING_REVIEW|APPROVED|CONDITIONS_APPLIED|REJECTED|NEEDS_CLARIFICATION
+  decision  Json?
+  riskScore Int?
+  riskBand  String? // LOW | MEDIUM | HIGH
+
+  // monitoring (B2)
+  monitoringStatus           String  @default("COMPLIANT") // COMPLIANT|EXPIRING_SOON|DRIFT_DETECTED|PENDING_REVIEW|REMEDIATED|CONDITIONS_APPLIED|SUSPENDED_RECOMMENDED
+  monitoringReason           String?
+  lastAssessedAt             DateTime?
+  lastAssessedRulesetVersion Int?
+  completenessPct            Int     @default(0)
+  scenarioTag                String?
+
+  manualBaselineMinutes Int       @default(360)
+  aiElapsedMs           Int?
+  onboardedAt           DateTime?
+
+  documents       Document[]
+  drivers         Driver[]
+  vehicles        Vehicle[]
+  trips           Trip[]
+  riskAssessments RiskAssessment[]
+  validations     Validation[]
+  crossChecks     CrossCheck[]
+  events          ComplianceEvent[]
+  history         PartnerHistory[]
+  aiCalls         AiCallLog[]       @relation("PartnerAiCalls")
+  pipelineRuns    PipelineRun[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([marketId, status])
+  @@index([marketId, monitoringStatus])
+  @@index([deletedAt])
+}
+
+model PartnerHistory {
+  id         String       @id @default(uuid())
+  partnerId  String
+  partner    FleetPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  kind       String // ONBOARDED|REVALIDATED|DRIFT|REMEDIATION|CONDITION|SUSPENSION|RULESET_REFLAG
+  detail     Json
+  occurredAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([partnerId, occurredAt])
+}
+
+// ─── Documents + ground truth ────────────────────────────────────────────────
+
+model Document {
+  id         String        @id @default(uuid())
+  marketId   String?
+  market     Market?       @relation(fields: [marketId], references: [id])
+  partnerId  String?
+  partner    FleetPartner? @relation(fields: [partnerId], references: [id])
+
+  docType String
+  title   String
+
+  storageRef String
+  mimeType   String
+  byteSize   Int
+  sha256     String
+
+  extractedFields      Json?
+  validationResult     Json?
+  extractionConfidence Float?
+  status               String  @default("UPLOADED") // UPLOADED|EXTRACTING|EXTRACTED|VALIDATED|FLAGGED|REJECTED
+
+  issuedAt  DateTime?
+  expiresAt DateTime?
+
+  groundTruth  DocumentGroundTruth?
+  validations  Validation[]
+  crossChecksA CrossCheck[]         @relation("CrossCheckDocA")
+  crossChecksB CrossCheck[]         @relation("CrossCheckDocB")
+  arrSourceFor AuthorityRequest[]   @relation("ARRSourceDoc")
+  aiCalls      AiCallLog[]          @relation("DocAiCalls")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([partnerId, docType])
+  @@index([marketId, status])
+  @@index([expiresAt])
+  @@index([deletedAt])
+}
+
+model DocumentGroundTruth {
+  id              String   @id @default(uuid())
+  documentId      String   @unique
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  fields          Json
+  injectedDefects Json?
+  generatorSeed   String?
+  createdAt       DateTime @default(now())
+}
+
+// ─── Drivers / vehicles / trips ──────────────────────────────────────────────
+
+model Driver {
+  id               String       @id @default(uuid())
+  partnerId        String
+  partner          FleetPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  fullName         String
+  nationalId       String?
+  licenseNo        String?
+  permitNo         String?
+  licenseExpiresAt DateTime?
+  permitExpiresAt  DateTime?
+  status           String       @default("ACTIVE") // ACTIVE | SUSPENDED | EXPIRED
+  trips            Trip[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([partnerId])
+  @@index([licenseExpiresAt])
+}
+
+model Vehicle {
+  id                     String       @id @default(uuid())
+  partnerId              String
+  partner                FleetPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  plate                  String
+  vin                    String?
+  make                   String?
+  model                  String?
+  year                   Int?
+  registrationNo         String?
+  registrationValidUntil DateTime?
+  insuranceValidUntil    DateTime?
+  inspectionValidUntil   DateTime?
+  status                 String       @default("ACTIVE") // ACTIVE | GROUNDED | PENDING_DOCS
+  addedAt                DateTime     @default(now())
+  trips                  Trip[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([partnerId])
+  @@index([registrationValidUntil])
+  @@index([inspectionValidUntil])
+}
+
+model Trip {
+  id         String       @id @default(uuid())
+  partnerId  String
+  partner    FleetPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  driverId   String?
+  driver     Driver?      @relation(fields: [driverId], references: [id])
+  vehicleId  String?
+  vehicle    Vehicle?     @relation(fields: [vehicleId], references: [id])
+  startedAt  DateTime
+  endedAt    DateTime?
+  distanceKm Float?
+  fareMinor  Int?
+  zone       String?
+  city       String?
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  @@index([partnerId, startedAt])
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([zone])
+}
+
+// ─── Validation / cross-check / risk / events ────────────────────────────────
+
+model Validation {
+  id                 String            @id @default(uuid())
+  ruleId             String
+  scope              String // DOCUMENT|PARTNER|VEHICLE|DRIVER|ARR
+  documentId         String?
+  document           Document?         @relation(fields: [documentId], references: [id])
+  partnerId          String?
+  partner            FleetPartner?     @relation(fields: [partnerId], references: [id])
+  authorityRequestId String?
+  authorityRequest   AuthorityRequest? @relation(fields: [authorityRequestId], references: [id])
+  outcome            String // PASS|FAIL|WARN|NOT_APPLICABLE
+  severity           String // INFO|LOW|MEDIUM|HIGH|CRITICAL
+  message            String
+  evidence           Json?
+  confidence         Float?
+  createdAt          DateTime @default(now())
+
+  @@index([partnerId, outcome])
+  @@index([documentId])
+  @@index([ruleId])
+}
+
+model CrossCheck {
+  id         String       @id @default(uuid())
+  partnerId  String
+  partner    FleetPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  checkId    String
+  docAId     String?
+  docA       Document?    @relation("CrossCheckDocA", fields: [docAId], references: [id])
+  docBId     String?
+  docB       Document?    @relation("CrossCheckDocB", fields: [docBId], references: [id])
+  field      String
+  valueA     String?
+  valueB     String?
+  outcome    String // MATCH | MISMATCH | INDETERMINATE
+  confidence Float?
+  message    String?
+  createdAt  DateTime @default(now())
+
+  @@index([partnerId, outcome])
+}
+
+model RiskAssessment {
+  id             String             @id @default(uuid())
+  partnerId      String
+  partner        FleetPartner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  rulesetId      String?
+  ruleset        RegulatoryRuleset? @relation(fields: [rulesetId], references: [id])
+  rulesetVersion Int
+  score          Int
+  band           String // LOW | MEDIUM | HIGH
+  factors        Json
+  explanation    String
+  isCurrent      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  deletedAt      DateTime?
+
+  @@index([partnerId, isCurrent])
+}
+
+model ComplianceEvent {
+  id                 String             @id @default(uuid())
+  marketId           String?
+  market             Market?            @relation(fields: [marketId], references: [id])
+  partnerId          String?
+  partner            FleetPartner?      @relation(fields: [partnerId], references: [id])
+  authorityRequestId String?
+  authorityRequest   AuthorityRequest?  @relation(fields: [authorityRequestId], references: [id])
+  rulesetId          String?
+  ruleset            RegulatoryRuleset? @relation(fields: [rulesetId], references: [id])
+  type               String // STATE_CHANGE|EXPIRY_FORECAST|DRIFT_DETECTED|RENEWAL|REVALIDATION|RULESET_REFLAG|HUMAN_ACTION|ALERT
+  severity           String   @default("INFO") // INFO|LOW|MEDIUM|HIGH|CRITICAL
+  title              String
+  detail             Json?
+  occurredAt         DateTime @default(now())
+  dueAt              DateTime?
+  resolvedAt         DateTime?
+  createdAt          DateTime @default(now())
+
+  @@index([partnerId, occurredAt])
+  @@index([type, dueAt])
+  @@index([marketId, occurredAt])
+}
+
+// ─── Pipeline runs (live stepper reads these) ────────────────────────────────
+
+model PipelineRun {
+  id                 String            @id @default(uuid())
+  surface            String // ARR | B1 | B2 | REGINTAKE
+  authorityRequestId String?
+  authorityRequest   AuthorityRequest? @relation(fields: [authorityRequestId], references: [id])
+  partnerId          String?
+  partner            FleetPartner?     @relation(fields: [partnerId], references: [id])
+  rulesetImportId    String? // REGINTAKE runs (scalar link — no back-relation needed)
+
+  status      String  @default("QUEUED") // QUEUED|RUNNING|AWAITING_REVIEW|COMPLETED|FAILED
+  statusReason String?
+  currentStage String?
+
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  elapsedMs Int?
+
+  stages PipelineStage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([authorityRequestId])
+  @@index([partnerId])
+  @@index([rulesetImportId])
+}
+
+model PipelineStage {
+  id          String      @id @default(uuid())
+  runId       String
+  run         PipelineRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  name        String
+  ordering    Int
+  status      String      @default("PENDING") // PENDING|RUNNING|DONE|BLOCKED|FAILED|SKIPPED
+  progressPct Int         @default(0)
+  note        String?
+  output      Json?
+  confidence  Float?
+  blockReason String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  durationMs  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([runId, ordering])
+  @@index([runId])
+}
+
+// ─── Governance: audit + cost ledger ─────────────────────────────────────────
+
+model AuditLog {
+  id            Int      @id @default(autoincrement()) // append-only ordered log
+  actorType     String // HUMAN | AI | SYSTEM
+  actorUserId   String?
+  actorUser     User?    @relation(fields: [actorUserId], references: [id])
+  action        String
+  entity        String
+  entityId      String
+  before        Json?
+  after         Json?
+  // AI-specific
+  aiModel       String?
+  promptVersion String?
+  costMicroUsd  Int?
+  confidence    Float?
+  aiCallId      String?
+  // tamper-evident chain
+  prevHash      String?
+  hash          String
+  ts            DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorUserId])
+  @@index([ts])
+}
+
+model AiCallLog {
+  id                 String            @id @default(uuid())
+  authorityRequestId String?
+  authorityRequest   AuthorityRequest? @relation("ARRAiCalls", fields: [authorityRequestId], references: [id])
+  partnerId          String?
+  partner            FleetPartner?     @relation("PartnerAiCalls", fields: [partnerId], references: [id])
+  documentId         String?
+  document           Document?         @relation("DocAiCalls", fields: [documentId], references: [id])
+  pipelineRunId      String?
+
+  agent            String
+  stage            String
+  model            String
+  promptId         String
+  promptVersion    String
+  tokensIn         Int
+  tokensOut        Int
+  cacheReadTokens  Int    @default(0)
+  cacheWriteTokens Int    @default(0)
+  latencyMs        Int
+  costMicroUsd     Int
+  confidence       Float?
+  requestHash      String?
+  ok               Boolean @default(true)
+  errorText        String?
+  createdAt        DateTime @default(now())
+
+  @@index([authorityRequestId])
+  @@index([partnerId])
+  @@index([stage, createdAt])
+  @@index([model])
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  name         String
+  passwordHash String?
+  role         String  @default("REVIEWER") // ADMIN | REVIEWER
+  isActive     Boolean @default(true)
+
+  sessions   Session[]
+  auditLogs  AuditLog[]
+  arrReviews AuthorityRequest[] @relation("ARRReviewer")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AppMeta {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

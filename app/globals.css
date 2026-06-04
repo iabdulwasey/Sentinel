@@ -1,26 +1,293 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Bolt Sentinel design tokens.
+  Brand green #34D186 (confirmed Bolt brand). Green = action / active / positive only.
+  Whitespace + near-black ink (#1A1A1A) carry the page; green punctuates it.
+  IP guardrail: Bolt-style branding is for a private demo only (see README).
+*/
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Static brand + status scales (generate bg-brand-500, text-success, etc.) */
+@theme {
+  --color-brand-50: #e8f9f4;
+  --color-brand-100: #bdf4d3;
+  --color-brand-200: #9cebc2;
+  --color-brand-300: #6fe0aa;
+  --color-brand-400: #4cd894;
+  --color-brand-500: #34d186;
+  --color-brand-600: #2abf78;
+  --color-brand-700: #22a766;
+  --color-brand-800: #1a8f55;
+  --color-brand-900: #127a45;
+  --color-brand-950: #0b5c33;
+  --color-brand: #34d186;
+  --color-brand-hover: #2ac278;
+  --color-brand-active: #24a86a;
+
+  --color-ink: #1a1a1a;
+  --color-ink-charcoal: #2d3232;
+  --color-ink-muted: #6c7070;
+
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f8f9fa;
+  --color-surface-sunken: #f1f3f4;
+
+  --color-success: #22a766;
+  --color-success-foreground: #ffffff;
+  --color-success-muted: #e8f9f4;
+  --color-warning: #c77700;
+  --color-warning-foreground: #ffffff;
+  --color-warning-muted: #fff4e0;
+  --color-danger: #cc2c48;
+  --color-danger-foreground: #ffffff;
+  --color-danger-muted: #fce8ec;
+  --color-info: #2563eb;
+  --color-info-foreground: #ffffff;
+  --color-info-muted: #e8f0fe;
+
+  --shadow-1: 0 1px 1px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-3: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-4: 0 12px 32px rgba(0, 0, 0, 0.16);
+
+  /* smallest text tier — 11px, paired line-height. Without this, `text-2xs` is not a
+     real Tailwind v4 utility and silently inherits the parent size (e.g. a table's
+     text-sm = 14px), which made several tables render larger than intended. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  /* layout sizing — used by w-sidebar / h-topbar so the logo strip and top bar align */
+  --spacing-sidebar: 15rem;
+  --spacing-topbar: 3.5rem;
+
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.4s infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --radius: 0.5rem; /* 8px — card radius; buttons/chips use radius-sm (4px) */
+
+  --background: #f8f9fa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+
+  --primary: #34d186;
+  --primary-foreground: #06281a;
+  --secondary: #bdf4d3;
+  --secondary-foreground: #0b5c33;
+  --muted: #f1f3f4;
+  --muted-foreground: #6c7070;
+  --accent: #e8f9f4;
+  --accent-foreground: #127a45;
+  --destructive: #cc2c48;
+
+  --border: #e5e5e5;
+  --border-strong: #d4d6d6;
+  --input: #e5e5e5;
+  --ring: #34d186;
+
+  /* charts: brand green, deep green, amber, red, charcoal */
+  --chart-1: #34d186;
+  --chart-2: #22a766;
+  --chart-3: #c77700;
+  --chart-4: #cc2c48;
+  --chart-5: #2d3232;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #34d186;
+  --sidebar-primary-foreground: #06281a;
+  --sidebar-accent: #e8f9f4;
+  --sidebar-accent-foreground: #127a45;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #34d186;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  *:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-brand-500) 55%, transparent);
+    outline-offset: 1px;
+  }
+  html {
+    font-family: var(--font-inter), Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-feature-settings: "cv05", "ss01";
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.012em;
+    color: var(--color-ink);
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-brand-200) 75%, transparent);
+    color: var(--color-ink);
+  }
+  .tabular-data {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Component primitives — plain CSS (var-driven) so they always compile; in @layer
+   components so Tailwind utilities still override them when composed. */
+@layer components {
+  .panel {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-card);
+    box-shadow: var(--shadow-2);
+  }
+  .panel-interactive {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .panel-interactive:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-3);
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.75rem 1.25rem;
+  }
+  .panel-title {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-muted);
+  }
+  .meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--color-ink-muted);
+  }
+  .th {
+    padding: 0.625rem 1rem;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-ink-muted);
+  }
+  .td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+  }
+  .row-link {
+    transition: background-color 0.15s ease;
+  }
+  .row-link:hover {
+    background-color: color-mix(in oklab, var(--color-surface-sunken) 60%, transparent);
+  }
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
