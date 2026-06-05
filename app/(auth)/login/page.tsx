@@ -15,7 +15,7 @@ const DEMO = [
 export default function LoginPage() {
   const router = useRouter();
   // Pre-warm the serverless function + DB connection so login is instant
-  useEffect(() => { fetch("/api/ping").catch(() => {}); }, []);
+  useEffect(() => { fetch("/api/auth/login").catch(() => {}); }, []);
   const [email, setEmail] = useState("admin@bolt.eu");
   const [password, setPassword] = useState("sentinel");
   const [showPassword, setShowPassword] = useState(false);

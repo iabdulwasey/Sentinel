@@ -12,6 +12,7 @@ async function notifyLogin(name: string, email: string) {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: "Bolt Sentinel <onboarding@resend.dev>",
+      reply_to: process.env.NOTIFY_EMAIL,
       to,
       subject: `Sentinel login — ${name}`,
       html: `<p><strong>${name}</strong> (<code>${email}</code>) just signed in to <strong>Bolt Sentinel</strong>.</p><p>${now} UTC</p>`,
