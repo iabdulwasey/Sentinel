@@ -125,8 +125,18 @@
     transform: translateX(100%);
   }
 }
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
 
 :root {
+  color-scheme: light;
   --radius: 0.5rem; /* 8px — card radius; buttons/chips use radius-sm (4px) */
 
   --background: #f8f9fa;
@@ -166,6 +176,120 @@
   --sidebar-accent-foreground: #127a45;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #34d186;
+
+  /* login brand rail — LIGHT (pale mint canvas, deep-green ink, green orbs) */
+  --rail-bg: linear-gradient(150deg, #e3f6ec 0%, #f0faf5 48%, #ffffff 100%);
+  --rail-text: #143a2b;
+  --rail-text-muted: #5e7a6c;
+  --rail-eyebrow: #6b8779;
+  --rail-grid: rgba(18, 55, 38, 0.06);
+  --rail-orb-1: rgba(52, 209, 134, 0.28);
+  --rail-orb-2: rgba(34, 167, 102, 0.2);
+  --rail-wordmark: linear-gradient(100deg, #0f7a45 0%, #22a766 35%, #34d186 70%, #0f7a45 100%);
+  --rail-hero: linear-gradient(165deg, #133024 0%, #1c6b45 55%, #5e8a74 100%);
+  --rail-accent: #0f8a4f;
+  --rail-card-bg: rgba(255, 255, 255, 0.72);
+  --rail-card-border: rgba(18, 55, 38, 0.1);
+  --rail-card-title: #5e7a6c;
+  --rail-card-metric: #133024;
+  --rail-card-unit: #7f968a;
+  --rail-pill-bg: rgba(18, 55, 38, 0.05);
+  --rail-pill-border: rgba(18, 55, 38, 0.12);
+  --rail-footer: #7f968a;
+}
+
+/*
+  Dark theme — the site default (set via the `theme` cookie in app/layout.tsx; toggled in the
+  top bar). Implemented purely by overriding the same design tokens, so every panel, table,
+  chip, and the login flip automatically. Bolt-flavoured: deep green-tinted charcoal surfaces,
+  brand green #34D186 unchanged as the action colour, status/accent text lightened for legibility.
+*/
+.dark {
+  color-scheme: dark;
+
+  /* shadcn bridge */
+  --background: #0c100e;
+  --foreground: #ecefed;
+  --card: #141a17;
+  --card-foreground: #ecefed;
+  --popover: #181f1b;
+  --popover-foreground: #ecefed;
+  --primary: #34d186;
+  --primary-foreground: #04130c;
+  --secondary: #15392a;
+  --secondary-foreground: #9cebc2;
+  --muted: #1c2320;
+  --muted-foreground: #99a39d;
+  --accent: #102a1f;
+  --accent-foreground: #6fe0aa;
+  --destructive: #f07085;
+  --border: #272e2a;
+  --border-strong: #39433d;
+  --input: #2a322e;
+  --ring: #34d186;
+  --chart-1: #34d186;
+  --chart-2: #6fe0aa;
+  --chart-3: #e7a33d;
+  --chart-4: #f07085;
+  --chart-5: #c7cdce;
+  --sidebar: #0f1512;
+  --sidebar-foreground: #ecefed;
+  --sidebar-primary: #34d186;
+  --sidebar-primary-foreground: #04130c;
+  --sidebar-accent: #102a1f;
+  --sidebar-accent-foreground: #6fe0aa;
+  --sidebar-border: #272e2a;
+  --sidebar-ring: #34d186;
+
+  /* static semantic tokens */
+  --color-ink: #ecefed;
+  --color-ink-charcoal: #ced3cf;
+  --color-ink-muted: #99a39d;
+  --color-surface: #141a17;
+  --color-surface-subtle: #0c100e;
+  --color-surface-sunken: #1c2320;
+
+  /* status — lighten the mains for dark legibility; darken the muted tints */
+  --color-success: #34d186;
+  --color-success-muted: #0f2a1e;
+  --color-warning: #e7a33d;
+  --color-warning-muted: #2e2310;
+  --color-danger: #f07085;
+  --color-danger-muted: #2e1419;
+  --color-info: #6f9bf2;
+  --color-info-muted: #14213a;
+
+  /* brand tints used as chip / active-state backgrounds + accent text */
+  --color-brand-50: #0f2a1e;
+  --color-brand-100: #16402d;
+  --color-brand-700: #57d39a;
+  --color-brand-800: #46c98c;
+
+  /* deepen shadows so panels separate on dark */
+  --shadow-1: 0 1px 1px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-4: 0 16px 40px rgba(0, 0, 0, 0.6);
+
+  /* login brand rail — DARK (deep green-black canvas, light ink, green orbs) */
+  --rail-bg: linear-gradient(150deg, #0a1712 0%, #0a130f 45%, #070d0a 100%);
+  --rail-text: #c4d2cb;
+  --rail-text-muted: #9fb0a8;
+  --rail-eyebrow: #7d8a83;
+  --rail-grid: rgba(255, 255, 255, 0.035);
+  --rail-orb-1: rgba(52, 209, 134, 0.16);
+  --rail-orb-2: rgba(34, 167, 102, 0.13);
+  --rail-wordmark: linear-gradient(100deg, #ffffff 0%, #d6f7e7 35%, #34d186 70%, #ffffff 100%);
+  --rail-hero: linear-gradient(165deg, #ffffff 0%, #e7ece9 55%, #8fb6a4 100%);
+  --rail-accent: #34d186;
+  --rail-card-bg: rgba(16, 26, 21, 0.55);
+  --rail-card-border: rgba(255, 255, 255, 0.1);
+  --rail-card-title: #8fb6a4;
+  --rail-card-metric: #ffffff;
+  --rail-card-unit: #6d7a73;
+  --rail-pill-bg: rgba(255, 255, 255, 0.04);
+  --rail-pill-border: rgba(255, 255, 255, 0.1);
+  --rail-footer: #5d6a63;
 }
 
 @layer base {
@@ -197,6 +321,10 @@
   ::selection {
     background-color: color-mix(in oklab, var(--color-brand-200) 75%, transparent);
     color: var(--color-ink);
+  }
+  .dark ::selection {
+    background-color: color-mix(in oklab, var(--color-brand-500) 38%, transparent);
+    color: #ffffff;
   }
   .tabular-data {
     font-variant-numeric: tabular-nums;

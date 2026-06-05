@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogOut, Sparkles, Globe, ChevronDown } from "lucide-react";
 import { CommandPalette } from "@/components/assistant/command-palette";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export interface ShellUser {
   name: string;
@@ -115,6 +116,7 @@ export function AppShell({ user, markets, children }: { user: ShellUser; markets
               <Sparkles className="size-3.5 text-brand-600" /> Ask
               <kbd className="ml-0.5 hidden rounded bg-surface-sunken px-1 text-[10px] text-ink-muted sm:inline">⌘K</kbd>
             </button>
+            <ThemeToggle />
             <div className="mx-1 h-5 w-px bg-border" />
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 rounded-md py-1 pl-1 pr-1.5 text-[13px] outline-none transition-colors hover:bg-surface-sunken">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -26,15 +27,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Dark is the default; users opt into light via the top-bar toggle (persisted in the
+  // `theme` cookie). Reading it here renders the correct theme server-side — no flash.
+  const theme = (await cookies()).get("theme")?.value;
+  const isDark = theme !== "light";
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased${isDark ? " dark" : ""}`}
     >
       <body className="min-h-full bg-surface-subtle text-ink">
         <Providers>{children}</Providers>
