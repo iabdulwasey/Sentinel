@@ -1,6 +1,23 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { db } from "./db";
+
+async function notifyLogin(name: string, email: string) {
+  const key = process.env.RESEND_API_KEY;
+  const to = process.env.NOTIFY_EMAIL;
+  if (!key || !to) return;
+  const now = new Date().toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short", timeZone: "UTC" });
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "Bolt Sentinel <onboarding@resend.dev>",
+      to,
+      subject: `Sentinel login — ${name}`,
+      html: `<p><strong>${name}</strong> (<code>${email}</code>) just signed in to <strong>Bolt Sentinel</strong>.</p><p>${now} UTC</p>`,
+    }),
+  }).catch(() => {}); // fire-and-forget — never block login
+}
 import { normalizeRoles, defaultActiveRole, legacyRole, permissionsForRoles } from "./rbac";
 
 /** Session-based auth with opaque tokens (sha256-hashed at rest) + multi-role RBAC. */
@@ -49,6 +66,7 @@ export async function login(email: string, password: string): Promise<SessionUse
   await db.session.create({ data: { userId: user.id, tokenHash: hashToken(token), expiresAt } });
 
   const su = buildSessionUser(user);
+  void notifyLogin(user.name, user.email);
   const jar = await cookies();
   const secure = process.env.NODE_ENV === "production";
   jar.set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure, path: "/", expires: expiresAt });
