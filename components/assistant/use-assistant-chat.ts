@@ -9,24 +9,13 @@ import {
 
 interface Meta { citations?: Citation[]; suggestions?: string[]; chart?: ChartSpec | null; grounded?: boolean }
 
-/** Split the stream into the markdown prose + the `===DATA===` JSON. The data line comes FIRST
- *  (so the chart is ready as the answer streams); falls back to trailing-data or pure prose. */
+/** Split the stream: prose streams first, `===DATA===` JSON comes at the end. */
 function splitStream(full: string): { prose: string; meta: Meta | null } {
-  const t = full.replace(/^\s+/, "");
-  if (t.startsWith("===DATA===")) {
-    const nl = t.indexOf("\n");
-    if (nl === -1) return { prose: "", meta: null }; // still receiving the data line
-    let meta: Meta | null = null;
-    try { meta = JSON.parse(t.slice(10, nl).trim()) as Meta; } catch { meta = null; }
-    return { prose: t.slice(nl + 1), meta };
-  }
-  const idx = t.indexOf("===DATA===");
-  if (idx >= 0) {
-    let meta: Meta | null = null;
-    try { meta = JSON.parse(t.slice(idx + 10).trim()) as Meta; } catch { meta = null; }
-    return { prose: t.slice(0, idx), meta };
-  }
-  return { prose: t, meta: null };
+  const idx = full.indexOf("===DATA===");
+  if (idx === -1) return { prose: full, meta: null };
+  let meta: Meta | null = null;
+  try { meta = JSON.parse(full.slice(idx + 10).trim()) as Meta; } catch { meta = null; }
+  return { prose: full.slice(0, idx).trim(), meta };
 }
 
 /** The shared brain for the assistant — streaming send + localStorage-backed conversations. */
