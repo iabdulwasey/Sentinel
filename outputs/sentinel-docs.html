@@ -25,10 +25,10 @@
     color: #1A1A1A; font-size: 9.6pt; line-height: 1.55; margin: 0;
   }
   h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; color: #0f1a14; }
-  h2 { font-size: 18pt; margin: 0 0 6pt; padding-bottom: 5pt; border-bottom: 2.5pt solid #34D186; page-break-before: always; }
-  h2.no-break { page-break-before: avoid; }
-  h3 { font-size: 13pt; margin: 16pt 0 5pt; color: #15402c; }
-  h4 { font-size: 10.6pt; margin: 12pt 0 3pt; color: #1A1A1A; }
+  h2 { font-size: 17pt; margin: 17pt 0 6pt; padding-bottom: 5pt; border-bottom: 2.5pt solid #34D186; break-after: avoid; }
+  h2.no-break { break-before: avoid; }
+  h3 { font-size: 13pt; margin: 14pt 0 5pt; color: #15402c; break-after: avoid; }
+  h4 { font-size: 10.6pt; margin: 12pt 0 3pt; color: #1A1A1A; break-after: avoid; }
   p { margin: 0 0 7pt; }
   ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
   li { margin: 0 0 3pt; }
@@ -63,6 +63,8 @@
 
   /* Tables */
   table { width: 100%; border-collapse: collapse; margin: 6pt 0 11pt; font-size: 8.5pt; }
+  tr { break-inside: avoid; }
+  pre, .box, .kpi-row { break-inside: avoid; }
   th { background: #15402c; color: #fff; text-align: left; padding: 5pt 7pt; font-weight: 600; font-size: 8pt;
     text-transform: uppercase; letter-spacing: .3px; }
   td { padding: 4.5pt 7pt; border-bottom: 0.5pt solid #e2e5e8; vertical-align: top; }
@@ -84,11 +86,12 @@
 
   .lead { font-size: 11pt; color: #2b3a31; line-height: 1.5; margin-bottom: 12pt; }
   .eyebrow { font-size: 8pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #34D186; margin-bottom: 2pt; }
-  .partsep { page-break-before: always; padding-top: 70mm; text-align: center; }
-  .partsep .eyebrow { font-size: 10pt; }
-  .partsep h1 { font-size: 30pt; color: #15402c; border: none; margin-top: 4pt; }
-  .partsep .rule { width: 60px; height: 3px; background: #34D186; margin: 14pt auto; }
-  .partsep p { max-width: 120mm; margin: 0 auto; color: #5f6368; }
+  .partsep { page-break-before: always; break-after: avoid; padding: 4mm 0 5pt; margin-bottom: 4pt;
+    border-bottom: 1pt solid #e4e7ea; text-align: left; }
+  .partsep .eyebrow { font-size: 9.5pt; }
+  .partsep h1 { font-size: 25pt; color: #15402c; border: none; margin: 1pt 0 0; }
+  .partsep .rule { width: 54px; height: 3px; background: #34D186; margin: 9pt 0; }
+  .partsep p { max-width: 165mm; margin: 0; color: #5f6368; font-size: 9.4pt; }
 
   pre { background: #0f1a14; color: #d7f5e4; padding: 9pt 11pt; border-radius: 6px; font-family: 'Geist Mono', monospace;
     font-size: 7.8pt; line-height: 1.5; overflow-x: hidden; white-space: pre-wrap; margin: 6pt 0 11pt; }

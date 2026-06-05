@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { db } from "./db";
 import { normalizeRoles, defaultActiveRole, legacyRole, permissionsForRoles } from "./rbac";
@@ -11,6 +10,17 @@ const SESSION_DAYS = 30;
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token + (process.env.SESSION_SECRET ?? "dev")).digest("hex");
+}
+
+function hashPassword(password: string): string {
+  return crypto.createHash("sha256").update(password + "sentinel-salt").digest("hex");
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  const a = Buffer.from(hashPassword(password));
+  const b = Buffer.from(hash);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 export interface SessionUser {
@@ -32,7 +42,7 @@ function buildSessionUser(u: { id: string; email: string; name: string; role: st
 export async function login(email: string, password: string): Promise<SessionUser | null> {
   const user = await db.user.findUnique({ where: { email: email.toLowerCase().trim() } });
   if (!user || !user.isActive || !user.passwordHash) return null;
-  if (!bcrypt.compareSync(password, user.passwordHash)) return null;
+  if (!verifyPassword(password, user.passwordHash)) return null;
 
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400_000);

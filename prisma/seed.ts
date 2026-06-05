@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { db } from "../lib/db";
 import { listMarketCodes, getRulesetEntry, listAllEntries } from "../engine/rules/registry";
 import type { MarketRuleset, RequiredDocumentSpec } from "../engine/types/ruleset";
@@ -68,7 +68,7 @@ async function resetDb() {
 
 async function seedUsers() {
   const password = "sentinel";
-  const hash = bcrypt.hashSync(password, 10);
+  const hash = crypto.createHash("sha256").update(password + "sentinel-salt").digest("hex");
   await db.user.create({ data: { email: "admin@bolt.eu", name: "Deb (Admin)", role: "ADMIN", roles: ["admin", "compliance_reviewer", "regulatory_author", "authority_liaison", "auditor"], passwordHash: hash } });
   await db.user.create({ data: { email: "reviewer@bolt.eu", name: "Rui Reviewer", role: "REVIEWER", roles: ["compliance_reviewer", "onboarding_officer", "compliance_monitor", "auditor"], passwordHash: hash } });
   return { password };

@@ -100,7 +100,7 @@ function Bubble({ m }: { m: ChatMessage }) {
         ) : m.streaming ? (
           <div className="flex items-center gap-2 text-[13px] text-ink-muted"><Loader2 className="size-3.5 animate-spin text-brand-600" /> Thinking…</div>
         ) : null}
-        {m.chart && <ChatChart spec={m.chart} />}
+        {m.chart && !m.streaming && <ChatChart spec={m.chart} />}
         {/* Sources are linked inline in the prose; only show a footer for any extra citations the model returned separately. */}
         {m.citations && m.citations.length > 0 && !m.streaming && (
           <div className="mt-2 flex flex-wrap items-center gap-1.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Loader2, AlertCircle, ShieldCheck, FileText, Activity, Sparkles, Mail, Lock, CheckCircle2, UserCog } from "lucide-react";
 import { BoltMark } from "@/components/brand/logo";
@@ -14,6 +14,8 @@ const DEMO = [
 
 export default function LoginPage() {
   const router = useRouter();
+  // Pre-warm the serverless function + DB connection so login is instant
+  useEffect(() => { fetch("/api/ping").catch(() => {}); }, []);
   const [email, setEmail] = useState("admin@bolt.eu");
   const [password, setPassword] = useState("sentinel");
   const [showPassword, setShowPassword] = useState(false);
