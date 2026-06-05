@@ -92,8 +92,8 @@ export function useAssistantChat(options?: { conversationId?: string }) {
           const { done, value } = await reader.read();
           if (done) break;
           full += decoder.decode(value, { stream: true });
-          const { prose, meta } = splitStream(full);
-          patchLastAssistant({ text: prose, streaming: true, chart: meta?.chart ?? null });
+          const { prose } = splitStream(full);
+          patchLastAssistant({ text: prose, streaming: true });
         }
         const { prose, meta } = splitStream(full);
         patchLastAssistant({ text: prose.trim() || full.trim(), streaming: false, citations: meta?.citations, suggestions: meta?.suggestions, chart: meta?.chart ?? null, grounded: meta?.grounded });
