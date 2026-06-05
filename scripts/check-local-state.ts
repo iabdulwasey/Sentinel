@@ -9,7 +9,7 @@ async function main() {
     db.complianceEvent.count(),
     db.auditLog.count(),
     db.fleetPartner.count({ where: { status: { in: ["APPROVED","CONDITIONS_APPLIED","PENDING_REVIEW","PROCESSING"] } } }),
-    db.fleetPartner.count({ where: { decision: { not: null } } }),
+    db.fleetPartner.count({ where: { NOT: { decision: { equals: undefined } } } }),
   ]);
   console.log(JSON.stringify({ pipelineRuns: runs, validations: vals, riskAssessments: risks, complianceEvents: events, auditLogs: audits, nonReceivedPartners: nonReceived, partnersWithDecision: withDecision }, null, 2));
   process.exit(0);
