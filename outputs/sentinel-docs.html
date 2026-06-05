@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bolt Sentinel — Product & Technical Documentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 20mm 18mm;
+    @bottom-center {
+      content: "Bolt Sentinel — Product & Technical Documentation";
+      font-family: 'Inter', sans-serif; font-size: 8pt; color: #9aa0a6;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: 'Inter', sans-serif; font-size: 8pt; color: #9aa0a6;
+    }
+  }
+  @page :first { margin: 0; @bottom-center { content: none; } @bottom-right { content: none; } }
+
+  * { box-sizing: border-box; }
+  html { -weasy-hyphens: auto; }
+  body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    color: #1A1A1A; font-size: 9.6pt; line-height: 1.55; margin: 0;
+  }
+  h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; color: #0f1a14; }
+  h2 { font-size: 18pt; margin: 0 0 6pt; padding-bottom: 5pt; border-bottom: 2.5pt solid #34D186; page-break-before: always; }
+  h2.no-break { page-break-before: avoid; }
+  h3 { font-size: 13pt; margin: 16pt 0 5pt; color: #15402c; }
+  h4 { font-size: 10.6pt; margin: 12pt 0 3pt; color: #1A1A1A; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin: 0 0 3pt; }
+  code { font-family: 'Geist Mono', 'SF Mono', Consolas, monospace; font-size: 8.4pt;
+    background: #f1f3f4; padding: 1pt 3pt; border-radius: 3px; color: #15402c; }
+  .small { font-size: 8.6pt; color: #5f6368; }
+  strong { color: #0f1a14; }
+  a { color: #1f7a52; text-decoration: none; }
+
+  /* Cover */
+  .cover { height: 297mm; background: linear-gradient(150deg, #0c3322 0%, #134b32 45%, #1f7a52 100%);
+    color: #fff; padding: 38mm 24mm; position: relative; page-break-after: always; }
+  .cover .mark { display: flex; align-items: center; gap: 10px; margin-bottom: 60mm; }
+  .cover .bolt { width: 34px; height: 34px; }
+  .cover .brandname { font-size: 15pt; font-weight: 700; letter-spacing: .3px; }
+  .cover h1 { color: #fff; font-size: 40pt; line-height: 1.05; margin: 0 0 10pt; font-weight: 800; letter-spacing: -.5px; }
+  .cover .tag { font-size: 14pt; color: #BDF4D3; font-weight: 500; max-width: 130mm; }
+  .cover .meta { position: absolute; bottom: 30mm; left: 24mm; right: 24mm; font-size: 9.5pt; color: #cdeeda;
+    border-top: 1px solid rgba(189,244,211,.35); padding-top: 10pt; display: flex; justify-content: space-between; }
+  .cover .pill { display: inline-block; background: rgba(255,255,255,.12); border: 1px solid rgba(189,244,211,.4);
+    color: #eafff3; padding: 3pt 9pt; border-radius: 20px; font-size: 8.6pt; margin: 0 6pt 6pt 0; }
+  .cover .pills { margin-top: 16pt; }
+
+  /* TOC */
+  .toc { page-break-after: always; }
+  .toc h2 { page-break-before: avoid; }
+  .toc ol { list-style: none; padding-left: 0; counter-reset: part; }
+  .toc > ol > li { counter-increment: part; font-weight: 700; margin-top: 9pt; font-size: 10.4pt; color: #15402c; }
+  .toc > ol > li::before { content: counter(part, upper-roman) ".  "; color: #34D186; }
+  .toc ol ol { padding-left: 14pt; margin-top: 2pt; }
+  .toc ol ol li { font-weight: 400; font-size: 9pt; color: #3c4043; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 11pt; font-size: 8.5pt; }
+  th { background: #15402c; color: #fff; text-align: left; padding: 5pt 7pt; font-weight: 600; font-size: 8pt;
+    text-transform: uppercase; letter-spacing: .3px; }
+  td { padding: 4.5pt 7pt; border-bottom: 0.5pt solid #e2e5e8; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8faf9; }
+  table code { font-size: 7.8pt; background: #eef2f0; }
+
+  /* Callouts */
+  .box { border-radius: 7px; padding: 9pt 12pt; margin: 9pt 0 11pt; font-size: 9pt; }
+  .box p:last-child { margin-bottom: 0; }
+  .box .lbl { font-weight: 700; font-size: 8pt; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 3pt; }
+  .box.green { background: #eafff3; border-left: 3.5pt solid #34D186; }
+  .box.green .lbl { color: #1f7a52; }
+  .box.amber { background: #fff7e6; border-left: 3.5pt solid #c77700; }
+  .box.amber .lbl { color: #c77700; }
+  .box.blue { background: #eef4ff; border-left: 3.5pt solid #2563eb; }
+  .box.blue .lbl { color: #2563eb; }
+  .box.gray { background: #f1f3f4; border-left: 3.5pt solid #5f6368; }
+  .box.gray .lbl { color: #3c4043; }
+
+  .lead { font-size: 11pt; color: #2b3a31; line-height: 1.5; margin-bottom: 12pt; }
+  .eyebrow { font-size: 8pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #34D186; margin-bottom: 2pt; }
+  .partsep { page-break-before: always; padding-top: 70mm; text-align: center; }
+  .partsep .eyebrow { font-size: 10pt; }
+  .partsep h1 { font-size: 30pt; color: #15402c; border: none; margin-top: 4pt; }
+  .partsep .rule { width: 60px; height: 3px; background: #34D186; margin: 14pt auto; }
+  .partsep p { max-width: 120mm; margin: 0 auto; color: #5f6368; }
+
+  pre { background: #0f1a14; color: #d7f5e4; padding: 9pt 11pt; border-radius: 6px; font-family: 'Geist Mono', monospace;
+    font-size: 7.8pt; line-height: 1.5; overflow-x: hidden; white-space: pre-wrap; margin: 6pt 0 11pt; }
+  .kpi-row { display: flex; gap: 8pt; margin: 8pt 0 12pt; }
+  .kpi { flex: 1; background: #f8faf9; border: 0.5pt solid #e2e5e8; border-top: 2.5pt solid #34D186; border-radius: 6px; padding: 8pt; }
+  .kpi .n { font-size: 16pt; font-weight: 800; color: #15402c; }
+  .kpi .l { font-size: 7.6pt; color: #5f6368; text-transform: uppercase; letter-spacing: .3px; }
+  .tag-chip { display:inline-block; background:#eafff3; color:#1f7a52; border-radius:4px; padding:1pt 5pt; font-size:7.6pt; font-weight:600; margin-right:3pt; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <div class="mark">
+    <svg class="bolt" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M58 6 L20 54 H46 L40 94 L80 44 H52 Z" fill="#34D186"/>
+    </svg>
+    <span class="brandname">Bolt Sentinel</span>
+  </div>
+  <div class="eyebrow" style="color:#BDF4D3;">Product &amp; Technical Documentation · Deep Dive</div>
+  <h1>Bolt Sentinel</h1>
+  <div class="tag">An AI-native Regulatory Operations Platform for ride-hailing — one integrated system covering Authority Request Response, Fleet Partner Onboarding, Ongoing Compliance Monitoring, and Regulation Intake over a shared compliance-intelligence engine.</div>
+  <div class="pills">
+    <span class="pill">4 operational surfaces</span>
+    <span class="pill">15 AI agents</span>
+    <span class="pill">6 markets · GDPR / NDPA / POPIA</span>
+    <span class="pill">Human-in-the-loop governance</span>
+    <span class="pill">Hash-chained audit</span>
+  </div>
+  <div class="meta">
+    <span>Comprehensive reference — every feature, subsystem &amp; module</span>
+    <span>Generated June 2026 · v1.0</span>
+  </div>
+</div>
+
+<!-- ================= TOC ================= -->
+<div class="toc">
+<h2 class="no-break">Contents</h2>
+<ol>
+  <li>Product Overview
+    <ol>
+      <li>What Bolt Sentinel is</li>
+      <li>The problem it solves</li>
+      <li>The four operational surfaces at a glance</li>
+      <li>The value contrast: hours to seconds</li>
+      <li>Governance non-negotiables</li>
+    </ol>
+  </li>
+  <li>The Operational Surfaces (Feature Deep-Dive)
+    <ol>
+      <li>Surface A — Authority Request Response</li>
+      <li>Surface B1 — Fleet Partner Onboarding</li>
+      <li>Surface B2 — Ongoing Compliance Monitoring</li>
+      <li>Surface C — Regulation Intake</li>
+      <li>Shared surfaces: Home, Assistant, Markets &amp; Rules, Accuracy, Audit, Settings, Guide</li>
+    </ol>
+  </li>
+  <li>The AI Engine
+    <ol>
+      <li>AI-first principle &amp; the centralized client</li>
+      <li>The 15 agents</li>
+      <li>Model routing &amp; tiers</li>
+      <li>Prompt registry &amp; the 17 prompts</li>
+      <li>Cost ledger</li>
+    </ol>
+  </li>
+  <li>Shared Core Architecture
+    <ol>
+      <li>Engine module map</li>
+      <li>The re-entrant pipeline pattern &amp; runner</li>
+      <li>Governance state machines</li>
+      <li>Provenance system</li>
+      <li>Hash-chained audit log</li>
+      <li>Document storage driver</li>
+    </ol>
+  </li>
+  <li>The Two Critical Subsystems
+    <ol>
+      <li>§7.A Compliance-Constraint Framework</li>
+      <li>§7.B Accuracy &amp; Confidence Layer</li>
+    </ol>
+  </li>
+  <li>The Market Ruleset System
+    <ol>
+      <li>Market = ruleset abstraction</li>
+      <li>The MarketRuleset contract</li>
+      <li>Validation DSL &amp; executor capability surface</li>
+      <li>The six markets in detail</li>
+    </ol>
+  </li>
+  <li>Data Model</li>
+  <li>API Reference</li>
+  <li>Frontend, Design System &amp; UX</li>
+  <li>RBAC, Authentication &amp; Security</li>
+  <li>Synthetic Data, Seed &amp; Scenarios</li>
+  <li>Tech Stack, Deployment &amp; Operations</li>
+  <li>Appendices — Enums, Glossary &amp; File Map</li>
+</ol>
+</div>
+
+<!-- ================= PART I ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part I</div>
+  <h1>Product Overview</h1>
+  <div class="rule"></div>
+  <p>What Bolt Sentinel is, the manual-compliance problem it removes, the four surfaces it ships, and the governance principles that bind everything it does.</p>
+</div>
+
+<h2>1.1 What Bolt Sentinel is</h2>
+<p class="lead">Bolt Sentinel is an AI-native <strong>Regulatory Operations Platform</strong> for a ride-hailing super-app operating across six markets — Estonia (Tallinn), Poland (Warsaw), Portugal (Lisbon/Porto), Romania (Bucharest), Nigeria (Lagos), and South Africa (Johannesburg/Cape Town). It is a single, integrated, production-grade platform that automates the highest-effort manual compliance work in ride-hailing central operations.</p>
+
+<p>It presents to users as one platform with four operational surfaces sitting on a shared compliance-intelligence core. Each surface follows the same computational shape — <em>ingest unstructured input → interpret it against a market-specific regulatory ruleset → validate or retrieve the relevant data → produce a governed, fully-traceable output</em> — with explainability on every field, an immutable audit trail, and a human decision required before anything binds.</p>
+
+<table>
+<tr><th style="width:18%">Surface</th><th style="width:42%">What it does</th><th>Who uses it</th></tr>
+<tr><td><strong>A — Authority Request Response (ARR)</strong></td><td>Interpret a regulator's request, map it to that market's legal requirements, retrieve the data, and produce a compliant, traceable report for human review and submission.</td><td>Local operations / compliance staff</td></tr>
+<tr><td><strong>B1 — Fleet Partner Onboarding</strong></td><td>Validate a partner's document pack against market rules, cross-check across documents, risk-score, and draft a go/no-go decision for a human.</td><td>Fleet operations / compliance staff</td></tr>
+<tr><td><strong>B2 — Ongoing Compliance Monitoring</strong></td><td>Continuously watch the live partner portfolio for expiries and drift, re-validate on renewal, and proactively re-trigger human review.</td><td>Fleet operations / compliance monitors</td></tr>
+<tr><td><strong>C — Regulation Intake</strong></td><td>Upload a regulation; AI reads it, classifies the jurisdiction, and proposes a complete executable market ruleset that a human reviews and activates — this is how rules stay current.</td><td>Regulatory authors / compliance leads</td></tr>
+</table>
+
+<p>Everything runs on realistic <strong>synthetic data</strong> across the six markets. The product is branded "Bolt Sentinel" in Bolt's design language for a private demo only.</p>
+
+<div class="box amber">
+<span class="lbl">IP guardrail</span>
+<p>The "Bolt Sentinel" name, the green palette, and the lightning-bolt mark are an <em>approximation</em> of Bolt's design language recreated for a private demo shown directly to Bolt. The product is not affiliated with or endorsed by Bolt; the mark is an original SVG recreation, not Bolt's proprietary logo. The deployment is <code>noindex</code>. For any public use the mark/name should be swapped for a neutral brand labelled "concept built for a Bolt application."</p>
+</div>
+
+<h2>1.2 The problem it solves</h2>
+<p>A ride-hailing platform operating across many countries faces an enormous, non-uniform regulatory surface. Every market has its own transport-licensing regime, document requirements for fleet partners and drivers, data-residency/privacy/retention/lawful-basis constraints (GDPR variants across the EU; NDPA in Nigeria; POPIA in South Africa), and authority reporting obligations. Two workflows consume the most manual effort.</p>
+
+<h3>Problem A — Authority Request Response</h3>
+<p>Local operations teams receive regular, ad-hoc requests from regulators ("provide all drivers who operated in central Lisbon during Q1 2026, with license validity and total trips"). Today an ops person must interpret what is actually being asked, know the market-specific legal requirements and acceptable format, figure out which internal systems hold the data, pull and cross-reference it, assemble a compliant report, and get it reviewed. This takes hours to days per request, recurs across many markets, and carries legal and financial risk if done wrong or late. The knowledge of "how to answer this authority in this market" lives in local staff heads and does not scale.</p>
+
+<h3>Problem B — Fleet Partner Compliance</h3>
+<p>A fleet partner is a company running multiple vehicles and drivers on the platform. Onboarding (B1) means collecting and validating a market-specific document set — operator licenses, commercial insurance, vehicle registrations and inspection certificates, driver certifications, tax/business registration — for authenticity, completeness and internal consistency, then making a go/no-go call. Monitoring (B2) is the fact that compliance is not static: documents expire on rolling schedules, fleets change, regulations update. Lapses today go unnoticed until they become incidents.</p>
+
+<div class="box green">
+<span class="lbl">Why one platform</span>
+<p>All four surfaces are computationally the same shape, and the market-rule layer, document/text understanding, governance/audit/human-in-the-loop layer, and explainability + accuracy layer are common infrastructure. Building them once and serving multiple compliance workflows is simply how a serious platform is built. To the user it is one integrated regulatory-operations platform.</p>
+</div>
+
+<h2>1.3 The four operational surfaces at a glance</h2>
+<p>Surfaces A, B1, and C are <strong>re-entrant pipelines</strong> driven by one runner; B2 is a continuous monitoring loop over the live portfolio that reuses B1's validation machinery. Each pipeline runs live Claude calls one stage at a time, persisting output, confidence and timing so the UI streams progress.</p>
+
+<table>
+<tr><th>Surface</th><th>Pipeline stages (in order)</th><th>State machine end states</th></tr>
+<tr><td>A — ARR</td><td>intake → rule-mapping → retrieval-plan → retrieval-exec → generation → self-validation</td><td>APPROVED_FOR_SUBMISSION / REJECTED / NEEDS_CLARIFICATION</td></tr>
+<tr><td>B1 — Onboarding</td><td>extraction → validation &amp; cross-checks → risk → decision draft</td><td>APPROVED / CONDITIONS_APPLIED / REJECTED</td></tr>
+<tr><td>B2 — Monitoring</td><td>(loop) signals → ruleset re-flag → drift → expiry forecast → status</td><td>REMEDIATED / CONDITIONS_APPLIED / SUSPENDED_RECOMMENDED</td></tr>
+<tr><td>C — Regulation Intake</td><td>read → classify → synthesize → self-validate → diff → finalize</td><td>ACTIVATED / REJECTED / NEEDS_EDIT</td></tr>
+</table>
+
+<h2>1.4 The value contrast: hours to seconds</h2>
+<p>The persuasion device is threaded throughout the product: "this took a person half a day; watch it happen in seconds." Manual baselines are configurable per workflow (ARR default 240 minutes, onboarding 360, regulation intake 480) and clearly labelled estimates. Sentinel surfaces the contrast in several places:</p>
+<ul>
+  <li><strong>Per-item completion</strong> — a "Manual baseline ~Xh / Sentinel Ys" banner on each completed request or onboarding, using the real elapsed AI processing time (<code>aiElapsedMs</code>).</li>
+  <li><strong>Per-stage timing</strong> — the pipeline stepper shows how long each AI stage took.</li>
+  <li><strong>Portfolio level</strong> — the Home dashboard shows cumulative hours saved this period plus the total AI cost (the capital-efficiency story: hours saved against dollars spent).</li>
+  <li><strong>Audit/report footer</strong> — elapsed time, model used, and cost per artifact for traceability.</li>
+</ul>
+
+<h2>1.5 Governance non-negotiables</h2>
+<p>Six principles are enforced architecturally, not bolted on. They appear verbatim in the project's <code>CLAUDE.md</code> as the rules the system must never violate.</p>
+<table>
+<tr><th style="width:30%">Principle</th><th>How it is enforced</th></tr>
+<tr><td><strong>Human-in-the-loop before anything binds</strong></td><td>The system never auto-submits to an authority, never auto-approves/rejects a partner, never auto-suspends. AI proposes; a human decides. Enforced by the state machines in <code>engine/governance/</code>.</td></tr>
+<tr><td><strong>Provenance on every generated figure</strong></td><td>Every number traces to its exact source rows plus the prompt version that produced it, and is clickable in the UI.</td></tr>
+<tr><td><strong>The LLM never touches the database</strong></td><td>Planning agents emit a typed query plan; a deterministic executor is the only thing that runs Prisma. Figures are computed by code, so provenance is real.</td></tr>
+<tr><td><strong>Audit everything, immutably</strong></td><td>Every meaningful action is appended to a hash-chained audit log with actor, before/after, and — for AI — model, prompt version, cost and confidence.</td></tr>
+<tr><td><strong>AI everywhere it adds value</strong></td><td>No deterministic stubs where reasoning belongs; multi-tier routing keeps it cost-disciplined.</td></tr>
+<tr><td><strong>Compliance + accuracy are architectural</strong></td><td>The §7.A compliance-constraint framework and §7.B accuracy/confidence layer are enforced and visible.</td></tr>
+<tr><td><strong>Market = ruleset</strong></td><td>Every rule lives in the DB as a Zod-validated <code>MarketRuleset</code>; adding/changing a market is a new ruleset version, never a change to engine code.</td></tr>
+</table>
+
+<!-- ================= PART II ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part II</div>
+  <h1>The Operational Surfaces</h1>
+  <div class="rule"></div>
+  <p>A feature-by-feature deep dive into each of the four surfaces and every shared screen — what they do, the pipeline behind them, every panel and interaction, and the sub-features.</p>
+</div>
+
+<h2>2.1 Surface A — Authority Request Response (ARR)</h2>
+<p class="lead">A regulator sends a request; Sentinel interprets it, maps it to the market's legal requirements, retrieves the data deterministically, generates a compliant report with per-figure provenance, self-validates it, and hands a review-ready artifact to a human. The system never submits to the authority — a human approves, and an export is produced for them to submit.</p>
+
+<h3>The end-to-end flow</h3>
+<p>A request is created with a reference like <code>ARR-EE-0007</code>, a title, the authority, optional cited legal basis, the raw text (or a source PDF), a market, a deadline, and a manual baseline. It starts in status <code>RECEIVED</code> and runs through a six-stage pipeline (surface <code>ARR</code>):</p>
+
+<table>
+<tr><th style="width:6%">#</th><th style="width:20%">Stage</th><th style="width:16%">Agent / tier</th><th>What happens</th></tr>
+<tr><td>1</td><td>Intake → Intent</td><td>IntakeAgent · balanced · <code>intake.request.v1</code></td><td>Parses the free text/PDF into a structured <code>RequestIntent</code>: summary, authority, legal basis, purpose, subject types (driver/vehicle/fleet partner/trip), requested fields, filters (zone, period, status), deadline, ambiguities, and a confidence. <strong>Gate:</strong> if any ambiguity is found (only ever raised when the reporting <em>period</em> is undeterminable, e.g. "the period referenced in our earlier letter") the request transitions to <code>NEEDS_CLARIFICATION</code> and the pipeline blocks for a human.</td></tr>
+<tr><td>2</td><td>Rule mapping → Compliance plan</td><td>RuleMappingAgent · reasoning · <code>rules.interpret.v1</code></td><td>Reasons over the market ruleset (passed as cacheable context) to classify each requested field as <strong>ANSWERABLE</strong>, <strong>CAUTIONED</strong> (needs minimization/aggregation), or <strong>OUT_OF_SCOPE</strong> (overreach / restricted without basis). Produces the mandated report format id, a compliance checklist, and structure notes.</td></tr>
+<tr><td>3</td><td>Retrieval planning</td><td>RetrievalPlannerAgent · balanced · <code>retrieval.plan.v1</code></td><td>Turns the plan into a typed query plan — one query per answerable/cautioned field — using only the ruleset's field keys. It does <em>not</em> touch the database.</td></tr>
+<tr><td>4</td><td>Retrieval + compliance</td><td>Deterministic (no LLM) + ComplianceConstraintAgent</td><td>The deterministic executor runs Prisma queries for every non-out-of-scope field, tagging each figure with its source row ids (real provenance). Then the §7.A constraint framework enforces residency/PII/lawful-basis rules — masking, aggregating, or withholding fields — recording an explainable decision per field.</td></tr>
+<tr><td>5</td><td>Report generation</td><td>GenerationAgent · reasoning · <code>generation.report.v1</code></td><td>Generates the compliant report in the mandated language and structure, using only the computed dataset and copying values exactly. Persists a normalized <code>ReportField</code> row per figure (with provenance + the originating AI call id) for the click-through provenance UI.</td></tr>
+<tr><td>6</td><td>Self-validation + confidence</td><td>Deterministic verify + ValidationAgent · reasoning · <code>validation.selfcheck.v1</code></td><td>First, a deterministic figure-vs-source check recomputes every figure against its cited rows. Then an adversarial validation pass confirms each checklist item is satisfied and each figure is plausible, flagging blocking discrepancies. Confidence per field is attached; the run completes to <code>PENDING_REVIEW</code>.</td></tr>
+</table>
+
+<p>On human approval the status becomes <code>APPROVED</code> (approved for submission) and an export is produced. Other human actions: reject, request changes (moves to <code>NEEDS_CLARIFICATION</code> with a note), regenerate (re-runs the pipeline), and clarify (appends a clarification note to the raw text and re-runs).</p>
+
+<h3>The request inbox</h3>
+<p>Lists non-deleted requests scoped to the active market filter, ordered by received date with open statuses floated to the top; the header shows an open count. Columns: reference (mono link), request (title + authority), market, status badge, and a live SLA countdown chip that turns amber within 24 hours of the deadline and red when overdue.</p>
+
+<h3>The request workspace</h3>
+<p>The detail screen is the core ARR experience. A header shows the reference, title, country · authority · legal basis, the SLA chip, and the status. Conditional banners appear for <code>NEEDS_CLARIFICATION</code> (clarification panel), terminal decisions (a decision-outcome banner with reviewer name and timestamp), and a time-saved banner once the run has elapsed.</p>
+<ul>
+  <li><strong>Left rail</strong> — the live <em>pipeline stepper</em> (starts the pipeline, polls status every 700ms and drives one stage advance at a time, expandable per-stage output and confidence); the original <em>authority request</em> text; the <em>AI interpretation</em> panel (summary, purpose, subjects, zone, period, ambiguity warnings); and the <em>compliance checklist</em> panel where each item carries a satisfied/✗ icon cross-referenced to the self-validation result, plus a "field disposition" view mapping ANSWERABLE→PASS, OUT_OF_SCOPE→FAIL, CAUTIONED→WARN.</li>
+  <li><strong>Right (main)</strong> — the <em>generated report</em> rendered as a styled article. Each <code>{{fieldKey}}</code> token in a section body is rendered as a clickable <em>provenance figure</em>. Review actions sit at the top. Below: a "compliance constraints applied" panel (each §7.A decision as allow→PASS / block→FAIL / mask·aggregate→WARN with rule + rationale), a "supporting detail" panel for list-typed fields, and a "self-validation" panel (figures-verified count, an overall confidence meter, and a blocking warning if present).</li>
+</ul>
+
+<h4>Provenance figures (click-through to source)</h4>
+<p>Every figure is an inline button (dashed underline; brand-green with a ✓ if verified, amber with a ⚠ if not). Opening it fetches <code>/api/report-fields/[id]/provenance</code>, which resolves the figure's provenance refs into the real source rows (Driver/Vehicle/Trip/FleetPartner, capped at 50 ids each) and returns the originating AI call's model, prompt version, cost and confidence. The dialog shows the classification, total source-row count, the AI call metadata, and a mini-table per source entity. This realizes the "every figure traces to its source rows + the prompt that produced it" guarantee.</p>
+
+<h4>Report export</h4>
+<p><code>GET /api/authority-requests/[id]/export?format=pdf|json</code> produces the submission artifact. The PDF (built with pdfkit, <code>lib/report-pdf.ts</code>) carries a Bolt-green header bar with the bolt mark and wordmark, regulator/market/reference, the title, preamble, sections (with <code>{{key}}</code> figure substitution), a "Reported figures" table, the closing, and a footer noting generation time/model plus "Synthetic demonstration data — not an official filing."</p>
+
+<div class="box blue">
+<span class="lbl">ARR scenarios seeded</span>
+<p>Six requests demonstrate distinct behaviours: a <strong>clean Tallinn</strong> Q1 driver/trip request (happy path), an <strong>ambiguous Warsaw</strong> request referencing an unspecified earlier letter (surfaces a clarification), a <strong>Lagos NDPA</strong> driver-PII roster (the constraint engine aggregates/masks), a <strong>Johannesburg overreach</strong> request for per-driver criminal records (flagged out-of-scope), and clean <strong>Lisbon</strong> and <strong>Bucharest</strong> requests showing market-specific report formats.</p>
+</div>
+
+<h2>2.2 Surface B1 — Fleet Partner Onboarding</h2>
+<p class="lead">A partner submits a document pack; Sentinel reads every document natively, validates each against the market's rules, cross-checks across documents, risk-scores the partner, and drafts an approve / approve-with-conditions / reject decision for a human. The system never auto-decides.</p>
+
+<h3>The four-stage pipeline (surface B1)</h3>
+<table>
+<tr><th style="width:6%">#</th><th style="width:20%">Stage</th><th style="width:18%">Engine</th><th>What happens</th></tr>
+<tr><td>1</td><td>Document extraction</td><td>ExtractionAgent · reasoning · <code>extraction.fields.v1</code></td><td>For each document, the PDF/image bytes are fed to Claude natively (no separate OCR). Expected fields come from the ruleset's document spec. Per-field calibrated confidence is captured; illegible/absent fields are marked present=false. A document whose overall confidence &lt; 0.70 (or any present field &lt; 0.60) is <code>FLAGGED</code> rather than passed silently; otherwise <code>EXTRACTED</code>. Documents are processed in parallel.</td></tr>
+<tr><td>2</td><td>Validation &amp; cross-checks</td><td>Deterministic DSL (no LLM)</td><td>Each document's validation rules are evaluated with the rule DSL (13 operators — regex, date-not-expired, cross-field equals, numeric comparisons, etc.) producing PASS/WARN/FAIL with severity, message, and evidence. Cross-document checks compare fields across documents (e.g. operator-license holder vs business-registration name) producing MATCH/MISMATCH/INDETERMINATE. Completeness is computed as required non-optional docs present for the partner type, yielding a missing-docs list and a completeness %.</td></tr>
+<tr><td>3</td><td>Risk scoring</td><td>RiskAgent · balanced · <code>risk.score.v1</code></td><td>Aggregates signals (doc/vehicle/driver counts, FAIL/WARN counts, cross-check mismatches, low-confidence docs, items expiring within 30 days, expired items) and the market's risk model (weighted factors: completeness 0.30, expiry proximity 0.25, inconsistencies 0.30, fleet size 0.15). Emits a 0–100 score (higher = riskier), a band (LOW/MEDIUM/HIGH), and per-factor contributions with evidence. Supersedes the prior assessment.</td></tr>
+<tr><td>4</td><td>Decision draft</td><td>GenerationAgent · reasoning · <code>generation.onboarding.v1</code></td><td>Drafts a go/no-go: APPROVE / APPROVE_WITH_CONDITIONS / REJECT with conditions and rationale. A low-confidence extraction becomes a required human-verification condition. The pipeline completes to <code>PENDING_REVIEW</code>; a human binds the decision.</td></tr>
+</table>
+
+<h3>The onboarding queue</h3>
+<p>Lists partners scoped to the market with counts of documents/vehicles/drivers; queue statuses sort to the top; the header reads "x awaiting · y total." Columns: partner (legal name + reference), market, type, fleet summary (vehicles · drivers · docs), completeness bar + %, risk band badge, and status.</p>
+
+<h3>The onboarding workspace</h3>
+<ul>
+  <li><strong>Documents panel</strong> — a document viewer with a left list (FLAGGED ⚠ / VALIDATED ✓ icons), an iframe PDF preview of the original, and an "extracted fields" panel showing each field's value with a confidence meter; missing or low-confidence (&lt; 0.70) fields are highlighted, notes are shown, and a "gaps" footer lists what the model could not extract.</li>
+  <li><strong>Pipeline stepper</strong> — runs the onboarding pipeline and streams stage progress.</li>
+  <li><strong>Decision draft panel</strong> — the AI's recommended outcome (hint badge while still a draft), rationale, conditions list and confidence meter, with reject / approve / approve-with-conditions actions.</li>
+  <li><strong>Risk assessment panel</strong> — score, band badge, explanation, and per-factor contribution bars.</li>
+  <li><strong>Required-documents checklist</strong> — "x/y" with present ✓ / missing ✗ per required doc for the partner type.</li>
+  <li><strong>Validation &amp; cross-checks panel</strong> — cross-check messages (including "valueA ≠ valueB" on mismatch), non-passing validations, or "All N rules passed."</li>
+</ul>
+
+<div class="box blue">
+<span class="lbl">B1 scenarios seeded</span>
+<p>A <strong>clean</strong> Portugal partner (fast approve), a <strong>name-mismatch</strong> partner whose operator license and business registration disagree (caught by a cross-check), a <strong>missing-document</strong> Poland partner (checklist gap → approve-with-conditions draft), and a <strong>low-confidence-extraction</strong> partner whose illegible TVDE license forces mandatory human review via confidence gating.</p>
+</div>
+
+<h2>2.3 Surface B2 — Ongoing Compliance Monitoring</h2>
+<p class="lead">Once a partner is onboarded, compliance is continuously monitored over the live portfolio. B2 is a distinct lifecycle with its own state machine and screens — it is not a re-entrant pipeline but a direct-call engine (<code>surfaces/fleet-monitoring/monitor.ts</code>) that reuses B1's validation machinery. It never auto-suspends; it routes drift to a human.</p>
+
+<h3>The monitoring sweep</h3>
+<p><code>runMonitoringForPartner(partnerId)</code> runs the lifecycle for one partner; <code>runSweep(marketId?)</code> sweeps every APPROVED / CONDITIONS_APPLIED partner. The sweep is triggerable manually (the dashboard "Sweep" button → <code>POST /api/monitoring/sweep</code>) and on a Vercel cron (<code>/api/cron/monitoring-sweep</code>). For each partner:</p>
+<ol>
+  <li><strong>Deterministic signals</strong> — builds an upcoming-expiry list (vehicle inspection/insurance/registration and driver licence within a 30-day horizon, sorted by days-until); detects vehicles added in the last 45 days with no valid registration; detects expired inspections; and computes whether the partner's last-assessed ruleset version is behind the market's active version.</li>
+  <li><strong>Ruleset re-flag (highest priority)</strong> — if the partner is on an older ruleset version, status → <code>PENDING_REVIEW</code> and a <code>RULESET_REFLAG</code> compliance event is recorded.</li>
+  <li><strong>Drift detection</strong> — if signals exist, the DriftDetectionAgent (balanced, <code>risk.drift.v1</code>) compares previous vs current state for new vehicles without docs, lapsed documents, and fleet-composition changes; on detected drift the status becomes <code>DRIFT_DETECTED</code> and a <code>DRIFT_DETECTED</code> event is recorded.</li>
+  <li><strong>Expiry forecast</strong> — if upcoming expiries exist, the ExpiryForecastAgent (fast, <code>risk.forecast.v1</code>) contextualizes them into proactive gap predictions with severity (≤7 days CRITICAL, ≤21 HIGH, ≤30 MEDIUM); a still-compliant partner becomes <code>EXPIRING_SOON</code> with an <code>EXPIRY_FORECAST</code> event.</li>
+  <li><strong>Status application</strong> — a human-owned <code>PENDING_REVIEW</code> is preserved; an AI <code>MONITORING_SWEEP</code> audit row is written.</li>
+</ol>
+
+<h3>Re-validation on renewal</h3>
+<p><code>revalidatePartner(partnerId)</code> (<code>POST /api/partners/[id]/monitoring/revalidate</code>) re-extracts any newly-uploaded (renewed) documents using the same ExtractionAgent, sets them VALIDATED, extends expiring vehicle insurance where an insurance doc was renewed, re-runs the monitoring lifecycle, and — if the partner was EXPIRING_SOON — returns it to COMPLIANT. It records a resolved <code>REVALIDATION</code> event and partner-history entry. No full re-onboarding is needed.</p>
+
+<h3>The monitoring dashboard</h3>
+<p>Scope is APPROVED / CONDITIONS_APPLIED partners, market-filtered. Four KPIs: portfolio compliant %, at-risk partner count, items expiring within 12 weeks, and open alerts. Panels: a <em>portfolio health</em> stacked bar by monitoring status; an <em>expiry pipeline</em> bar chart bucketing vehicle inspection/insurance expiries into six two-week windows over 12 weeks; an <em>at-risk partners</em> table (risk, status, reason); and a <em>proactive alerts</em> list of open compliance events with severity.</p>
+
+<h3>The partner monitoring detail</h3>
+<p>Shows a document &amp; vehicle validity table (plate plus inspection/insurance/registration dates coloured by validity — missing/expired FAIL, within 30 days WARN, else PASS), a merged compliance-history-and-events timeline, and the current risk breakdown. Human actions (<code>POST /api/partners/[id]/monitoring/decision</code>): re-validate, mark remediated, apply conditions, recommend suspension, or clear back to compliant — each creating a partner-history entry and a resolved <code>HUMAN_ACTION</code> event.</p>
+
+<div class="box blue">
+<span class="lbl">B2 scenarios seeded</span>
+<p>An Estonia partner with two vehicle inspections lapsing in 21 days (expiry forecast + proactive alert + risk bump); an Estonia partner who added two vehicles without valid registration (drift detection flags it); a Poland partner whose insurance expires in 10 days with a hand-built "renewed" insurance PDF ready for re-validation; and the Estonia ruleset bump from v1 to v2 (adding a driver background-check document) which re-flags previously-compliant partners for review.</p>
+</div>
+
+<h2>2.4 Surface C — Regulation Intake</h2>
+<p class="lead">This is how rules stay current. Upload a regulation (PDF or pasted text); AI reads it into quotable sections, classifies the jurisdiction, and synthesizes a complete, executable market ruleset constrained to what the engine can actually run. The draft is quarantined until a human activates it — at which point it becomes a live market or a new version, and affected partners are re-flagged.</p>
+
+<h3>The six-stage pipeline (surface REGINTAKE)</h3>
+<table>
+<tr><th style="width:6%">#</th><th style="width:18%">Stage</th><th style="width:20%">Agent / tier</th><th>What happens</th></tr>
+<tr><td>1</td><td>Read regulation</td><td>RegulationReaderAgent · reasoning · <code>regulation.read.v1</code></td><td>Reads the uploaded regulation natively and decomposes it into stable, quotable sections (the provenance source), detecting language (BCP-47), country, regulator and topics.</td></tr>
+<tr><td>2</td><td>Classify jurisdiction</td><td>RegulationClassifierAgent · balanced · <code>regulation.classify.v1</code></td><td>Determines jurisdiction, region (EU/NG/ZA/US/OTHER), privacy regime (GDPR/NDPA/POPIA), currency/locale/timezone, and a suggested market code; decides whether it matches an existing market (a version update) or is a new market.</td></tr>
+<tr><td>3</td><td>Synthesize ruleset</td><td>RulesetSynthesisAgent · reasoning · <code>ruleset.synthesize.v1</code></td><td>"The most consequential agent." Emits a full <code>MarketRuleset</code> using only the executor's closed vocabularies (entities, aggregations, operators). Anything it cannot express is surfaced as <code>unmappedFields</code> / <code>unsupportedClauses</code> — never invented. Each element carries provenance with a verbatim source quote and section id. For updates it keeps stable ids and emits change notes.</td></tr>
+<tr><td>4</td><td>Validate + dry-run</td><td>Deterministic + ValidationAgent · reasoning · <code>ruleset.validate.v1</code></td><td>Runs <code>MarketRulesetSchema.safeParse</code> (schema gate) plus <code>validateRulesetSources</code> (an "executor dry-run" confirming every answerable field's source is actually executable), then an adversarial review of faithfulness/completeness/coherence/privacy-posture. Blocking if the schema fails, sources are not executable, or the review flags critical/high issues.</td></tr>
+<tr><td>5</td><td>Diff vs current</td><td>Deterministic (no LLM)</td><td>For an update, produces a structural diff vs the current active version (documents/fields/cross-checks added·removed·changed, plus policy changes); for a new market, marks it new.</td></tr>
+<tr><td>6</td><td>Ready for review</td><td>—</td><td>Transitions the import to <code>PENDING_REVIEW</code> with the proposed market/version.</td></tr>
+</table>
+
+<h3>The intake screens</h3>
+<p>The list shows up to 100 imports with reference, source (filename or "pasted text"), proposed market (code + version + "new" chip), status chip, confidence, and date; an upload form (drag/drop PDF/PNG/JPEG or paste text) sits above. The detail screen shows the classification chips (country, region, privacy regime, target code+version, new-market vs version-update) and, once a draft exists: proposed required documents, authority-answerable fields, the proposed compliance policy, a "flagged for human wiring" panel (the honest unmapped fields and unsupported clauses), and a provenance panel (up to 40 entries with source quotes and section ids). The right rail holds the decision actions, a validation panel (schema valid / sources executable / blocking chips and issues), a diff panel for updates, and the classification rationale.</p>
+
+<h3>Activation — the only path into the rules table</h3>
+<p><code>POST /api/regulation-intake/[id]/activate</code> is the sole way a synthesized ruleset becomes live. It re-parses the draft against <code>MarketRulesetSchema</code> (a hard gate), then either creates a new Market + RegulatoryRuleset (new market) or supersedes the prior active version and bumps <code>activeRulesetVersion</code> (update). On an update it <strong>re-flags</strong> every partner whose last-assessed version is behind the new one (creating RULESET_REFLAG events and moving them COMPLIANT → PENDING_REVIEW), invalidates the ruleset cache, and records a <code>RULESET_ACTIVATED</code> audit row. Reviewers can also save edits to the quarantined draft (<code>PATCH .../draft</code>, re-parsed against the schema) or reject it.</p>
+
+<h2>2.5 Shared surfaces</h2>
+
+<h3>Home dashboard</h3>
+<p>A cross-surface, market-filterable operational view. Five KPI stats: open authority requests, onboarding queue size, portfolio compliant % (x of y), items expiring within 30 days, and cumulative hours saved (with total AI cost and call count as a sublabel). Two panels — open authority requests (with SLA chips) and "needs attention" at-risk partners — plus a "recent AI activity" feed showing each recent AI call's agent, stage, model, prompt version, confidence, latency and cost.</p>
+
+<h3>Conversational assistant (⌘J)</h3>
+<p>A global, grounded LLM assistant spanning all surfaces. It is opened by the "Ask" button, the ⌘J shortcut, or the ⌘K command palette. It builds a grounded snapshot scoped to the market filter (recent authority requests, at-risk partners, expiring vehicles, open compliance events, and the portfolio breakdown — each item carrying an href), and answers <em>only</em> from that context with citations; ungrounded questions get a visible "no grounded source" caveat rather than a hallucination. It streams token-by-token (<code>/api/assistant/stream</code>) and can return an inline chart (bar/line/donut) and follow-up suggestions. Citations become clickable record links with a live popover preview (<code>/api/assistant/preview</code>). Conversations are saved in localStorage; a dedicated Assistant page lists saved conversations alongside the chat thread.</p>
+
+<h3>Markets &amp; Rules</h3>
+<p>A read-only explorer over the active rulesets. The list resolves each market's active ruleset and shows regulator, regime, region, cross-border posture, active version, content hash, currency, and doc/field/check/zone counts, filterable by regime, region, and residency. The detail screen renders the full ruleset: required documents (accordion with expected fields and validation rules), authority-answerable fields with classifications and caution notes, cross-document checks, the mandated report format, the risk model, all ruleset versions with changelogs and hashes, and the full §7.A compliance policy (data residency, retention &amp; purpose, lawful bases, PII classification).</p>
+
+<h3>Accuracy view (§7.B)</h3>
+<p>Computes measured accuracy over the synthetic corpus from ground truth. Five KPIs: extraction F1, precision, recall, calibration error (ECE), and defect catch-rate. Panels: a calibration reliability view (predicted vs actual accuracy per confidence bucket with the ECE summary), a per-field confidence distribution chart keyed to the pass threshold, the confidence-gating policy (auto-pass ≥85% with higher bars for financial 90% / sensitive 92%, soft-flag 60–85%, hard block &lt;60% or unverified/mismatch), and accuracy by market. When no data is present it still shows the methodology and gating policy.</p>
+
+<h3>Audit &amp; Cost</h3>
+<p>Shows the latest audit entries with actor (AI/HUMAN/SYSTEM icon + name), action, entity, AI detail (model · prompt version · cost) and timestamp; a chain-integrity badge ("Verified" or "Broken @ N") from <code>verifyAuditChain()</code>; the total AI cost and call count; tokens in/out; and cost grouped by model.</p>
+
+<h3>Settings</h3>
+<p>Nine tabs: General (workspace name, default market, manual baselines, theme), AI &amp; Models (Anthropic key status + admin set/clear, per-tier model routing with rate-card pricing, prompt-caching toggle, monthly budget alert), Connectors &amp; Data (datastore/storage status, intake channels, webhook, API ingest tokens), Approval Workflows (the locked human-in-the-loop gates plus dual-approval policy toggles), Confidence &amp; Accuracy (pass/review/financial/sensitive thresholds, block-on-unverified, block-on-mismatch), Compliance &amp; Data (cross-border default, retention months, auto-purge), Team &amp; Roles (team table + add teammate + the RBAC matrix), Notifications (six trigger toggles + channels), and Audit &amp; Security (verify chain, session timeout, danger zone).</p>
+
+<h3>User Guide</h3>
+<p>A standalone, data-driven, searchable 14-section walkthrough (Getting Started, Roles &amp; Access, each surface, Markets &amp; Rules, Regulation Intake, Accuracy, Audit, Assistant, Settings, Reference &amp; FAQ, Governance &amp; Trust) with a scroll-spy sidebar, deep-linkable sections, callouts, step lists, tables, and status-lifecycle references.</p>
+
+<!-- ================= PART III ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part III</div>
+  <h1>The AI Engine</h1>
+  <div class="rule"></div>
+  <p>The AI-first principle, the single centralized Claude client, the fifteen named agents, multi-tier model routing, the versioned prompt registry, and the cost ledger.</p>
+</div>
+
+<h2>3.1 AI-first principle &amp; the centralized client</h2>
+<p>Every value-adding stage is a named <strong>agent</strong> — a typed LLM operation routed to a model tier and backed by a versioned prompt file. A single core invariant governs the whole system: <strong>the LLM never queries the database.</strong> Planning agents emit a typed query plan; a deterministic executor is the only Prisma caller and tags every row with its primary key. The model plans and narrates; figures are computed in code, so provenance is real.</p>
+
+<p>Exactly one file imports the Anthropic SDK: <code>engine/llm/client.ts</code>. Every call goes through it so that cost, prompt version, latency and confidence are always recorded. Its <code>callLlm&lt;T&gt;()</code> function:</p>
+<ul>
+  <li>Resolves the prompt by id/version from the registry, the model from the routed tier (overridable via Settings), and a default 4096 max tokens.</li>
+  <li>Builds the system text (optionally appending a cacheable market-ruleset context block, marked ephemeral for prompt caching when enabled), and renders <code>{{var}}</code> templates.</li>
+  <li>Attaches documents as native <code>document</code> (PDF) or <code>image</code> blocks — no separate OCR.</li>
+  <li>Forces <strong>Structured Outputs</strong> by registering a tool whose input schema is the Zod schema converted to JSON Schema, with <code>tool_choice</code> pinned to it; the tool input is then <code>schema.parse()</code>d.</li>
+  <li>Retries up to four attempts with exponential backoff (800·2^n ms + jitter) on retryable statuses (408, 409, 429, 500, 502, 503, 529).</li>
+  <li>Computes cost from a per-model rate card (input/output/cache-write/cache-read per million tokens) in integer micro-USD, extracts confidence from <code>data.confidence</code>/<code>overallConfidence</code>, and writes an <code>AiCallLog</code> row on both success and terminal failure.</li>
+</ul>
+<p>A streaming variant, <code>callLlmStream()</code>, powers the assistant — an async generator yielding text deltas with a best-effort ledger row on completion.</p>
+
+<h2>3.2 The fifteen agents</h2>
+<p>Twelve core agents plus three Surface-C agents. Tiers: <strong>fast</strong> = <code>claude-haiku-4-5-20251001</code>, <strong>balanced</strong> = <code>claude-sonnet-4-6</code>, <strong>reasoning</strong> = <code>claude-opus-4-8</code>.</p>
+<table>
+<tr><th style="width:20%">Agent</th><th>Responsibility</th><th style="width:12%">Tier</th><th style="width:13%">Surfaces</th></tr>
+<tr><td><strong>IntakeAgent</strong></td><td>Parse free text/PDF into a structured intent (ARR) or document model</td><td>balanced</td><td>A</td></tr>
+<tr><td><strong>RuleMappingAgent</strong></td><td>Interpret the ruleset → answerable/cautioned/out-of-scope fields, format, checklist</td><td>reasoning</td><td>A</td></tr>
+<tr><td><strong>RetrievalPlannerAgent</strong></td><td>Turn the plan into a typed query plan (no DB access)</td><td>balanced</td><td>A</td></tr>
+<tr><td><strong>ExtractionAgent</strong></td><td>Read documents natively → typed fields + per-field confidence; flag gaps</td><td>reasoning</td><td>B1, B2</td></tr>
+<tr><td><strong>GenerationAgent</strong></td><td>Generate the compliant report / onboarding-decision narrative</td><td>reasoning</td><td>A, B1</td></tr>
+<tr><td><strong>ValidationAgent</strong></td><td>Adversarial self-check vs checklist; blocks completion on discrepancies</td><td>reasoning</td><td>A, B1, B2, C</td></tr>
+<tr><td><strong>RiskAgent</strong></td><td>Explainable partner risk score with contributing factors</td><td>balanced</td><td>B1, B2</td></tr>
+<tr><td><strong>ExpiryForecastAgent</strong></td><td>Forecast credential expiries into proactive gap predictions</td><td>fast</td><td>B2</td></tr>
+<tr><td><strong>DriftDetectionAgent</strong></td><td>Compare prior vs fresh state → material compliance drift</td><td>balanced</td><td>B2</td></tr>
+<tr><td><strong>ComplianceConstraintAgent</strong></td><td>Reason about residency/PII/lawful-basis; explain constraint decisions (deterministic rules override it)</td><td>reasoning</td><td>middleware</td></tr>
+<tr><td><strong>ExplainAgent</strong></td><td>Human-readable rationale for a field/decision</td><td>balanced</td><td>A, B1</td></tr>
+<tr><td><strong>AssistantAgent</strong></td><td>Grounded conversational Q&amp;A with citations</td><td>balanced</td><td>global</td></tr>
+<tr><td><strong>RegulationReaderAgent</strong></td><td>Read a regulation → quotable sections + detected jurisdiction/language</td><td>reasoning</td><td>C</td></tr>
+<tr><td><strong>RegulationClassifierAgent</strong></td><td>Classify jurisdiction/regime; new-market vs version-update</td><td>balanced</td><td>C</td></tr>
+<tr><td><strong>RulesetSynthesisAgent</strong></td><td>Synthesize a complete executable ruleset + per-rule provenance + honest gaps</td><td>reasoning</td><td>C</td></tr>
+</table>
+
+<h2>3.3 Model routing &amp; tiers</h2>
+<p>Routing is centralized in <code>engine/llm/router.ts</code>. The rationale: <strong>reasoning</strong> (Opus) for legal interpretation, document extraction (errors poison everything downstream), generation (format/constraint adherence), and self-validation (must be at least as capable as the generator, run with an adversarial prompt to avoid shared blind spots); <strong>balanced</strong> (Sonnet) for structured mapping, scoring, drift, rationale, and the assistant; <strong>fast</strong> (Haiku) for date-arithmetic-heavy forecasting and simple classification. An <code>escalate</code> hint bumps a call up one tier. The rate card (per million tokens) is: Opus $5 in / $25 out, Sonnet $3 / $15, Haiku $1 / $5, each with cache-write and cache-read discounts; tier timeouts are 45s / 90s / 150s.</p>
+
+<h2>3.4 The prompt registry &amp; the 17 prompts</h2>
+<p>Prompts are versioned markdown files under <code>engine/llm/prompts/</code> named <code>&lt;id&gt;.v&lt;n&gt;.md</code>, each with front-matter (id, version, tier, output schema) and <code>===SYSTEM===</code> / <code>===USER===</code> sections. The loader caches all versions and defaults to the highest; the version string flows into every result, ledger row and figure, so any artifact is traceable to the exact prompt that produced it. New prompt versions are meant to be regression-gated by the §7.B eval harness.</p>
+<table>
+<tr><th style="width:24%">Prompt</th><th style="width:11%">Tier</th><th>Notable rules</th></tr>
+<tr><td><code>intake.request</code></td><td>balanced</td><td>Extract intent; flag ambiguities <em>only</em> when the reporting period is undeterminable; never flag residency/PII/lawful-basis questions.</td></tr>
+<tr><td><code>rules.interpret</code></td><td>reasoning</td><td>Map each requested field to a ruleset key; classify answerable/cautioned/out-of-scope respecting residency and restricted-disclosure keys.</td></tr>
+<tr><td><code>retrieval.plan</code></td><td>balanced</td><td>One query per answerable/cautioned field; only provided field keys; never queries the DB.</td></tr>
+<tr><td><code>extraction.fields</code></td><td>reasoning</td><td>Extract expected fields with calibrated per-field confidence; null + present=false when illegible; list gaps.</td></tr>
+<tr><td><code>generation.report</code></td><td>reasoning</td><td>Use only the computed dataset; copy values exactly; set sourceRowIds to exactly the dataset's ids; mandated language/structure.</td></tr>
+<tr><td><code>generation.onboarding</code></td><td>reasoning</td><td>Draft approve / approve-with-conditions / reject; low-confidence extraction → human-verification condition.</td></tr>
+<tr><td><code>validation.selfcheck</code></td><td>reasoning</td><td>Adversarial: per-checklist satisfied? per-figure plausible vs sources? blocking on any unresolved discrepancy.</td></tr>
+<tr><td><code>risk.score</code></td><td>balanced</td><td>0–100 score from the market risk model factors+weights; per-factor contributions summing to the score; map to band.</td></tr>
+<tr><td><code>risk.forecast</code></td><td>fast</td><td>Severity by urgency (≤7d CRITICAL, ≤21d HIGH, ≤30d MEDIUM); concrete impact line.</td></tr>
+<tr><td><code>risk.drift</code></td><td>balanced</td><td>Compare snapshots; new vehicles without docs, lapsed docs, fleet change, now-failing under active ruleset.</td></tr>
+<tr><td><code>compliance.constraint</code></td><td>reasoning</td><td>Per field/data-class: allow/mask/aggregate/omit/block with governing rule + rationale; deterministic bright-line rules override it.</td></tr>
+<tr><td><code>explain.rationale</code></td><td>balanced</td><td>Short plain-language rationale for one field/decision/finding.</td></tr>
+<tr><td><code>assistant.grounded</code></td><td>balanced</td><td>Answer only from provided context; cite records; grounded=false if insufficient; always 2–4 suggestions.</td></tr>
+<tr><td><code>assistant.stream</code></td><td>balanced</td><td>Markdown answer with inline record links + a trailing <code>===DATA===</code> JSON block (chart/suggestions/grounded).</td></tr>
+<tr><td><code>regulation.read</code></td><td>reasoning</td><td>Decompose into stable quotable sections (the provenance source); detect language/country/regulator/topics.</td></tr>
+<tr><td><code>regulation.classify</code></td><td>balanced</td><td>Jurisdiction; region; privacy regime; suggested market code; new market vs version update.</td></tr>
+<tr><td><code>ruleset.synthesize</code></td><td>reasoning</td><td>Emit a full ruleset using only closed vocabularies; unmappable items → unmappedFields/unsupportedClauses; per-element provenance with verbatim quote.</td></tr>
+<tr><td><code>ruleset.validate</code></td><td>reasoning</td><td>Adversarial review of the draft ruleset; faithfulness/completeness/coherence/privacy; blocking on critical/high.</td></tr>
+</table>
+
+<h2>3.5 Cost ledger</h2>
+<p>Every Claude call logs an <code>AiCallLog</code> row: agent, stage, model, prompt id and version, tokens in/out, cache-read/write tokens, latency, cost in micro-USD, confidence, a request hash, and an ok/error flag, linked to the authority request / partner / document / pipeline run that triggered it. The Audit &amp; Cost and Home views aggregate cost per request/partner/market/agent and surface it alongside cumulative time-saved as the capital-efficiency story. Cost uses the per-model rate card including the cache-read discount.</p>
+
+<!-- ================= PART IV ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part IV</div>
+  <h1>Shared Core Architecture</h1>
+  <div class="rule"></div>
+  <p>The DRY engine that powers all four surfaces: module map, the re-entrant pipeline runner, the governance state machines, provenance, the hash-chained audit log, and the storage driver.</p>
+</div>
+
+<h2>4.1 Engine module map</h2>
+<p>Bolt Sentinel is a shared compliance-intelligence core with thin surfaces on top. The surfaces are pipeline configurations of one runner.</p>
+<table>
+<tr><th style="width:22%">Module</th><th>Responsibility</th></tr>
+<tr><td><code>engine/llm/</code></td><td>Centralized Anthropic client (the only SDK importer), model router, versioned prompt registry, cost ledger.</td></tr>
+<tr><td><code>engine/types/</code></td><td>The single source of truth — Zod schemas + TS unions for all enums, the ruleset contract, and every AI artifact.</td></tr>
+<tr><td><code>engine/rules/</code></td><td>DB-backed runtime ruleset resolver (<code>store.ts</code>), the seed-time registry, the structural diff, the executor dry-run validator, and the six market ruleset files.</td></tr>
+<tr><td><code>engine/retrieval/</code></td><td>The deterministic executor — the only Prisma caller in the AI path; computes figures with real provenance.</td></tr>
+<tr><td><code>engine/validation/</code></td><td>The declarative rule-DSL evaluator (validations + cross-document checks).</td></tr>
+<tr><td><code>engine/compliance/</code></td><td>§7.A constraint framework: residency, PII, lawful-basis, retention, purpose limitation.</td></tr>
+<tr><td><code>engine/accuracy/</code></td><td>§7.B ground-truth eval harness + figure-vs-source verification.</td></tr>
+<tr><td><code>engine/governance/</code></td><td>Hash-chained audit log + the four human-in-the-loop state machines.</td></tr>
+<tr><td><code>engine/pipeline/</code></td><td>Stage/Context types, the re-entrant runner, the pipeline registry, progress emission.</td></tr>
+<tr><td><code>engine/storage/</code></td><td>Document driver — local filesystem in dev, Vercel Blob in prod.</td></tr>
+</table>
+
+<h2>4.2 The re-entrant pipeline pattern &amp; runner</h2>
+<p>A surface defines <code>Pipeline = { surface, stages[] }</code>, where each <code>Stage</code> is <code>{ name, label, run(ctx, io) }</code>. Contexts are <strong>re-entrant</strong>: they carry only entity ids and metadata, and each stage re-reads prior results from the DB and persists its own — so the chain is independently resumable, one stage per invocation.</p>
+<p>The runner (<code>engine/pipeline/runner.ts</code>):</p>
+<ul>
+  <li><strong>startPipeline</strong> creates a <code>PipelineRun</code> (QUEUED) wired to the entity by surface, creates ordered <code>PipelineStage</code> rows (PENDING), moves the entity to PROCESSING (B2 excepted), and audits <code>PIPELINE_START</code>.</li>
+  <li><strong>advanceOneStage</strong> runs exactly one pending stage. It <em>atomically claims</em> the stage with an <code>updateMany(PENDING→RUNNING)</code> — if the claim count is zero (a concurrent advance already claimed it) it returns without re-running, preventing double execution and double AI spend. On a <code>blocked</code> result the stage becomes BLOCKED, the run becomes AWAITING_REVIEW, the entity is routed to PENDING_REVIEW, and a <code>PIPELINE_GATE_OPENED</code> audit (actor AI) is written. On success the stage is DONE; on throw it is FAILED and the run FAILED.</li>
+  <li><strong>finishRun</strong> completes the run (recording <code>elapsedMs</code> and the entity's <code>aiElapsedMs</code> for the time-saved contrast) and transitions the entity to PENDING_REVIEW.</li>
+</ul>
+<div class="box gray">
+<span class="lbl">Why one stage per invocation</span>
+<p>Vercel functions have a bounded duration, so no single invocation runs a whole multi-stage AI pipeline. Completed stages are immutable and persisted, so a timeout merely pauses the chain; a resume sweeper (<code>/api/cron/resume-pipelines</code>) finds stalled runs, resets stuck RUNNING stages to PENDING, and continues from the first non-done stage. This also gives the live per-stage progress the UI streams.</p>
+</div>
+
+<h2>4.3 Governance state machines</h2>
+<p>Four typed transition maps (<code>engine/governance/state.ts</code>) make an illegal status string impossible to write — <code>assertTransition</code> throws on any illegal move, and every transition writes an audit row. No binding, submitted, or suspended state is ever reached without a human action.</p>
+<table>
+<tr><th style="width:14%">Machine</th><th>Transitions (abridged)</th></tr>
+<tr><td><strong>ARR</strong></td><td>RECEIVED → PROCESSING → PENDING_REVIEW → (APPROVED | REJECTED | NEEDS_CLARIFICATION) → DONE</td></tr>
+<tr><td><strong>Partner (B1)</strong></td><td>RECEIVED → PROCESSING → PENDING_REVIEW → (APPROVED | CONDITIONS_APPLIED | REJECTED); terminal states reachable only via a human.</td></tr>
+<tr><td><strong>Monitoring (B2)</strong></td><td>COMPLIANT → (EXPIRING_SOON | DRIFT_DETECTED) → PENDING_REVIEW → (REMEDIATED | CONDITIONS_APPLIED | SUSPENDED_RECOMMENDED) → COMPLIANT</td></tr>
+<tr><td><strong>RegImport (C)</strong></td><td>RECEIVED → PROCESSING → PENDING_REVIEW → (ACTIVATED | REJECTED | NEEDS_EDIT) → DONE</td></tr>
+</table>
+
+<h2>4.4 Provenance system</h2>
+<p>The deterministic executor returns every record tagged with its primary key and the query that fetched it. The GenerationAgent cites only those row ids (Structured Outputs + a deterministic post-check). Each figure is persisted as a normalized <code>ReportField</code> carrying <code>{ fieldKey, label, value, classification, confidence, verified, provenance[], aiCallId }</code>. The §7.B layer recomputes the figure from the cited rows to set <code>verified</code>. The UI renders each figure as a click-through to its source rows plus the exact AI call (model, prompt version, cost, confidence) that produced it.</p>
+
+<h2>4.5 Hash-chained audit log</h2>
+<p>Every meaningful action — AI call, constraint decision, gate open/close, human decision, state change — is appended to <code>AuditLog</code> with actor, action, entity, before/after and timestamp, and for AI rows the model, prompt version, cost and confidence. Rows are hash-chained: <code>hash = sha256(prevHash + canonical(payload))</code> using a deterministic sorted-key JSON, so any tampering breaks the chain downstream. <code>verifyAuditChain()</code> recomputes every hash in order and reports the first break; the Audit view shows a "Verified" / "Broken @ N" integrity badge.</p>
+
+<h2>4.6 Document storage driver</h2>
+<p>A storage-driver interface (<code>put / getBytes / getUrl / delete</code>) abstracts over a local-filesystem implementation (dev) and a Vercel Blob implementation (prod), selected by environment. <code>Document.storageRef</code> holds the key (local) or the full public URL (blob). PDFs are generated at seed time (Vercel's filesystem is ephemeral/read-only), and bytes are fetched as base64 to feed Claude's native PDF/image input. A guarded route (<code>/api/documents/[...path]</code>) streams stored bytes with the correct content type.</p>
+
+<!-- ================= PART V ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part V</div>
+  <h1>The Two Critical Subsystems</h1>
+  <div class="rule"></div>
+  <p>Governance and correctness are architectural, not bolted on: the §7.A Compliance-Constraint Framework and the §7.B Accuracy &amp; Confidence Layer.</p>
+</div>
+
+<h2>5.1 §7.A — Compliance-Constraint Framework</h2>
+<p class="lead">"How is governance enforced?" has a structural answer. Each market ruleset carries a typed <code>compliancePolicy</code>; middleware enforces it, and every constraint decision is explainable and audited.</p>
+<p>The framework (<code>engine/compliance/checks.ts</code>) enforces bright-line rules deterministically; the ComplianceConstraintAgent reasons about and explains decisions but <strong>cannot override a hard block</strong>. The authoritative <code>deterministicAction</code> resolves, per field:</p>
+<table>
+<tr><th style="width:22%">Field classification</th><th style="width:18%">Action</th><th>Rule</th></tr>
+<tr><td>OUT_OF_SCOPE</td><td><strong>block</strong> (withheld)</td><td>Restricted / special-category disclosure — overreach. Field omitted from the dataset.</td></tr>
+<tr><td>CAUTIONED + list value + (restricted or residency-restricted)</td><td><strong>aggregate</strong></td><td>PII minimization / cross-border residency — the list value is replaced by its count, relabelled "(aggregated count)."</td></tr>
+<tr><td>CAUTIONED (otherwise)</td><td>allow</td><td>Disclosure permitted with caution.</td></tr>
+<tr><td>ANSWERABLE</td><td>allow</td><td>Legal obligation.</td></tr>
+</table>
+<p>Residency-restricted means the policy's <code>crossBorderTransferAllowed</code> is false; restricted means the field is in the policy's <code>restrictedDisclosureFieldKeys</code>. The framework also supports masking (stripping name/licenseNo per row). The LLM enrichment adds a human-readable rationale per field but the deterministic action stands; failures of the LLM call are swallowed so the deterministic decision always holds. The policy covers data residency (storage region, cross-border allowance, allowed transfer regions), PII classification per field, lawful bases (tag → applicable field keys), purpose limitation (declared purposes + restricted-disclosure keys), and retention (document/audit months + auto-purge). This drives the Lagos NDPA residency scenario and the Johannesburg POPIA overreach scenario.</p>
+
+<h2>5.2 §7.B — Accuracy &amp; Confidence Layer</h2>
+<p class="lead">"How do you know the AI is right?" has a visible answer, because synthetic documents are generated <em>from</em> known ground truth — so accuracy is measurable.</p>
+
+<h3>Per-field confidence &amp; gating</h3>
+<p>Every extracted field and generated figure carries a confidence score. Gating thresholds live once in <code>lib/confidence.ts</code>: pass ≥ 0.85 (higher for sensitive 0.92 / financial 0.90 fields), review 0.60–0.85, and block below 0.60. Critically, <code>gateDecision</code> <strong>always blocks</strong> an unverified figure or a validation mismatch regardless of confidence. The gate is wired into the human-in-the-loop checkpoints.</p>
+
+<h3>Figure-vs-source verification</h3>
+<p><code>engine/accuracy/verify.ts</code> recomputes each report figure from its cited rows, independent of the LLM — the hard backstop against hallucinated numbers. A figure must (a) match a dataset field, (b) cite a non-empty set of source row ids that is a subset of the dataset's provenance ids, and (c) have a matching value. Any failure marks the figure unverified and should block completion.</p>
+
+<h3>Ground-truth eval harness</h3>
+<p><code>engine/accuracy/eval.ts</code> measures extraction precision/recall/F1 against the documents' ground-truth answer keys, builds a calibration reliability view (predicted confidence vs actual accuracy per bucket), tracks per-field confidence distribution, computes per-market F1, and measures the defect catch-rate — whether injected low-legibility defects are caught by low confidence. Confidence buckets are 0–50% / 50–70% / 70–85% / 85–100%. All of this is surfaced in the Accuracy view, making correctness visible — a credibility multiplier for a governance-grade product.</p>
+
+<!-- ================= PART VI ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part VI</div>
+  <h1>The Market Ruleset System</h1>
+  <div class="rule"></div>
+  <p>The "market = ruleset" abstraction, the MarketRuleset contract, the validation DSL and executor capability surface, and a detailed tour of all six markets.</p>
+</div>
+
+<h2>6.1 Market = ruleset abstraction</h2>
+<p>The engine never references a market by name. Every rule lives in the DB as a Zod-validated <code>MarketRuleset</code> in the <code>RegulatoryRuleset.content</code> column. The runtime resolver <code>engine/rules/store.ts</code> reads rules from the DB (cached by immutable <code>code:version</code>, with the mutable active-version pointer always read fresh). The built-in six markets are <em>seeded into</em> the DB from versioned TypeScript files under <code>engine/rules/markets/&lt;CODE&gt;/vN.ts</code> — code is seed input only. Adding or changing a market is a new ruleset version, produced either by seed or by the Regulation Intake surface, never by changing engine code.</p>
+
+<h2>6.2 The MarketRuleset contract</h2>
+<p>A ruleset (<code>engine/types/ruleset.ts</code>) is a single Zod-validated object with these blocks:</p>
+<table>
+<tr><th style="width:24%">Block</th><th>Contents</th></tr>
+<tr><td>Identity &amp; locale</td><td><code>marketCode</code>, <code>version</code>, country, regulator (name/code/website), region, timezone, currency, locale, zones[].</td></tr>
+<tr><td><code>requiredDocuments[]</code></td><td>Per doc: type, label, which partner types require it, optional flag, expected fields (key/label/type/PII class), validation rules, and validity months.</td></tr>
+<tr><td><code>crossDocumentChecks[]</code></td><td>Compare a field on document A vs a field on document B (CROSS_FIELD_EQUALS or MATCHES_REGEX) with severity and a fail message.</td></tr>
+<tr><td><code>authorityFields[]</code></td><td>The authority-answerable catalogue: key, label, classification (answerable/cautioned/out-of-scope), data class, an executor <code>source</code> (entity + aggregation + field + filter rule ids), caution note, lawful-basis tag.</td></tr>
+<tr><td><code>reportFormat</code></td><td>Mandated format: id, mandated-by, delivery (PDF/JSON/both), sections (heading + field keys), header/footer, date format, number format, language.</td></tr>
+<tr><td><code>compliancePolicy</code></td><td>§7.A: privacy regime, data residency, PII classification, lawful bases, purpose limitation, retention.</td></tr>
+<tr><td><code>namedFilters</code></td><td>Reusable filter fragments (e.g. <code>active</code>, <code>license_valid</code>, <code>inspection_valid</code>).</td></tr>
+<tr><td><code>riskModel</code></td><td>Weighted factors and the band thresholds (low/medium/high).</td></tr>
+</table>
+
+<h2>6.3 Validation DSL &amp; executor capability surface</h2>
+<p>Validations use a declarative DSL of 13 operators — EXISTS, NOT_EMPTY, EQUALS, NOT_EQUALS, MATCHES_REGEX, DATE_NOT_EXPIRED, DATE_WITHIN_DAYS, GTE, LTE, GT, LT, IN_SET, CROSS_FIELD_EQUALS — evaluated deterministically (<code>engine/validation/rules.ts</code>) with flexible date parsing (ISO and DD.MM.YYYY / DD/MM/YYYY) and case-insensitive comparison. So even complex per-market validations need no engine code.</p>
+<p>Authority-field sources must be executable by the deterministic executor (<code>engine/retrieval/executor.ts</code>); a static validator (<code>validate-sources.ts</code>) keeps the ruleset in lockstep with it. The executor's capability surface:</p>
+<table>
+<tr><th style="width:16%">Entity</th><th style="width:18%">Aggregations</th><th>Filterable / selectable fields</th></tr>
+<tr><td>Driver</td><td>count, list</td><td>licenseExpiresAt, permitExpiresAt, status, nationalId, licenseNo, permitNo, fullName (named filters supported)</td></tr>
+<tr><td>Vehicle</td><td>count, list</td><td>registration/insurance/inspection validity dates, status, addedAt, plate, year, make, model, vin, registrationNo</td></tr>
+<tr><td>Trip</td><td>count, sum</td><td>zone, city, startedAt, fareMinor, distanceKm (scoped by request zone/period, not named filters)</td></tr>
+<tr><td>FleetPartner</td><td>count, list</td><td>partnerType, status, riskBand, riskScore, reference, legalName, tradingName, registrationNo</td></tr>
+</table>
+<p>The executor scopes every query to the market, applies named filters and request period/zone, caps provenance id arrays at 100, and reads a synthetic "as of" date from app metadata so seeded expiry/anomaly scenarios are stable.</p>
+
+<h2>6.4 The six markets in detail</h2>
+<p>All six share a common risk model (completeness 0.30, expiry proximity 0.25, inconsistencies 0.30, fleet size 0.15; bands low 0–33 / medium 34–66 / high 67–100) and a standard answerable-field set (active drivers, drivers with valid license, per-driver list, completed trips scoped by zone/period, active vehicles, vehicles with valid inspection, fleet-partner list). The differences are the regime, documents, formats and constraints below.</p>
+
+<h3>Estonia — EE_TALLINN (GDPR, region EU)</h3>
+<p>Regulator Transpordiamet (TRAM). EUR, locale <code>et</code>, Europe/Tallinn, 8 Tallinn zones. Documents include an operator permit (<code>^EE-TVR-\d&#123;6&#125;$</code>, issuer must be Transpordiamet, 60-month validity), 8-digit business registry code, vehicle insurance/registration/inspection, and driver license. Cross-checks: permit holder vs company name (HIGH), insurance holder vs company (MEDIUM). Report <code>EE_TRAM_STANDARD_V1</code>, both delivery, date DD.MM.YYYY. Cross-border allowed within the EU; no restricted disclosure keys.</p>
+<p><strong>Version 2</strong> adds a required <code>DRIVER_BACKGROUND_CHECK</code> (criminal-record extract, a SENSITIVE field, result must be non-empty) for COMPANY / FLEET_OPERATOR partners — this is the B2 ruleset-update trigger that re-flags v1-compliant partners.</p>
+
+<h3>Poland — PL_WARSAW (GDPR, region EU)</h3>
+<p>Regulator Prezydent m.st. Warszawy (UMSTW). PLN, locale <code>pl</code>. Distinctive: a taxi license (<code>^WA/TAXI/\d&#123;4&#125;/\d&#123;4&#125;$</code>), a license extract with a Warsaw plate, a 10-digit NIP business registration, a vehicle registration requiring a taxi annotation, and a 1-month-validity driver criminal record. Cross-checks: licence holder vs company (HIGH), extract references the parent licence (MEDIUM). Report <code>PL_UMSTW_STANDARD_V1</code>.</p>
+
+<h3>Portugal — PT_LISBON (GDPR, region EU)</h3>
+<p>Regulator IMT. EUR, locale <code>pt-PT</code>. TVDE regime: operator license (<code>^TVDE-\d&#123;6&#125;$</code>, 120 months), TVDE driver certificate (CMTVDE, 60 months), vehicle TVDE badge linked to the operator licence number, vehicle inspection (IPO), insurance, and a 9-digit NIF business registration. Cross-checks: operator vs company (HIGH), badge references operator licence (MEDIUM). Report <code>PT_IMT_STANDARD_V1</code>, date DD/MM/YYYY.</p>
+
+<h3>Romania — RO_BUCHAREST (GDPR, region EU)</h3>
+<p>Regulator ARR. RON, locale <code>ro</code>, 6 sectors. Distinctive: a 6-month vehicle ITP inspection cycle, an alternative-transport authorization (<code>^ARR-B-\d&#123;6&#125;$</code>), a driver attestation (atestat), RCA insurance, vehicle registration, and a CUI business registration (<code>^RO\d&#123;2,10&#125;$</code>). Cross-checks: authorization holder vs company (HIGH), insurance plate vs registration plate (MEDIUM). Report <code>RO_ARR_STANDARD_V1</code>.</p>
+
+<h3>Nigeria — NG_LAGOS (NDPA, region NG — non-EU)</h3>
+<p>Regulator Lagos State MoT / LASDRI. NGN, locale <code>en</code>, Africa/Lagos. Documents: a service-entity permit (<code>^LSG-SEP-\d&#123;6&#125;$</code>), operator provisional license, vehicle roadworthiness, insurance, a 24-month LASDRI certificate, and an RC business registration. <strong>Distinctive compliance:</strong> NDPA regime, storage region NG, <em>cross-border transfer not allowed</em> (NDPA s.43), and two CAUTIONED fields (driver personal-details list and fleet-partners list, both in restricted-disclosure keys with NDPA minimization caution notes). Retention 24/60 months with auto-purge enabled. Report <code>NG_LAGOS_STANDARD_V1</code>. This drives the Lagos NDPA aggregation/masking scenario.</p>
+
+<h3>South Africa — ZA_JOHANNESBURG (POPIA, region ZA — non-EU)</h3>
+<p>Regulator NPTR / Gauteng PRE. ZAR, locale <code>en</code>, Africa/Johannesburg. Documents: an operating licence under the NLTA (<code>^NPTR-[A-Z]&#123;2&#125;-\d&#123;6&#125;$</code>, 84 months), NPTR registration certificate, a professional driving permit (PrDP), vehicle roadworthiness (CoR), insurance, and a CIPC business registration (<code>^\d&#123;4&#125;/\d&#123;6&#125;/07$</code>). <strong>Distinctive compliance:</strong> POPIA regime, storage region ZA, cross-border not allowed (s.72); the driver personal-details list is CAUTIONED, and the <em>driver criminal-record list is OUT_OF_SCOPE</em> (special-category, POPIA s.26, lawful basis consent) — the explicit overreach test case. Retention 36/60 months, auto-purge. Report <code>ZA_NPTR_STANDARD_V1</code>. This drives the Johannesburg overreach scenario.</p>
+
+<!-- ================= PART VII ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part VII</div>
+  <h1>Data Model</h1>
+  <div class="rule"></div>
+  <p>The full Prisma schema — SQLite locally, Turso (libSQL) in production via the driver adapter (same <code>sqlite</code> provider).</p>
+</div>
+
+<h2>7.1 Conventions</h2>
+<p>UUID primary keys, <code>createdAt</code>/<code>updatedAt</code>, soft-delete (<code>deletedAt</code>), statuses/types as <code>String</code> backed by Zod unions in <code>engine/types/</code>, arrays as JSON, money as <code>Int</code> micro-USD. Because Turso is libSQL there are no native enums and no scalar arrays — anything filtered or aggregated is a real column; JSON is only for display/provenance payloads.</p>
+
+<h2>7.2 Models</h2>
+<table>
+<tr><th style="width:22%">Model</th><th>Purpose &amp; key fields</th></tr>
+<tr><td><strong>Market</strong></td><td>A market: code, country, ISO2, cities, regulator name/code, privacy regime, region, timezone, currency, locale, and <code>activeRulesetVersion</code> (the mutable pointer).</td></tr>
+<tr><td><strong>RegulatoryRuleset</strong></td><td>A versioned ruleset: version, filePath, contentHash, summary, changelog, the full Zod-validated <code>content</code> (the DB source of truth), source (SEED/IMPORT), status (ACTIVE/SUPERSEDED), isActive. Unique on (marketId, version).</td></tr>
+<tr><td><strong>RulesetImport</strong></td><td>Surface C: the uploaded regulation + AI artifacts (reading, classification, draftRuleset, validation, diff), target market/version, status, and activation results. The draft is quarantined here until activation.</td></tr>
+<tr><td><strong>AuthorityRequest</strong></td><td>Surface A: reference, market, ruleset version, title, authority, legal basis, source text/PDF, the AI artifacts (intent, compliancePlan, retrievalPlan, retrievalResult, generatedReport, selfValidation), status, timing (received/deadline/processing/decided, manual baseline, aiElapsedMs), reviewer, and related reportFields/aiCalls/validations/pipelineRuns.</td></tr>
+<tr><td><strong>ReportField</strong></td><td>A normalized generated figure: fieldKey, label, value, classification, confidence, <code>verified</code>, <code>provenance[]</code>, <code>aiCallId</code>, ordering. Powers the click-through provenance UI.</td></tr>
+<tr><td><strong>FleetPartner</strong></td><td>B1/B2: reference, market, legal/trading name, type, registration, contacts, address; onboarding (status, decision, riskScore, riskBand); monitoring (monitoringStatus, reason, lastAssessedAt/RulesetVersion, completenessPct); timing/baseline; related documents/drivers/vehicles/trips/risk/validations/crossChecks/events/history/aiCalls/pipelineRuns.</td></tr>
+<tr><td><strong>PartnerHistory</strong></td><td>Lifecycle events: ONBOARDED, REVALIDATED, DRIFT, REMEDIATION, CONDITION, SUSPENSION, RULESET_REFLAG with detail and timestamp.</td></tr>
+<tr><td><strong>Document</strong></td><td>A partner/market document: type, title, storageRef, mime/size/sha256, extractedFields, validationResult, extractionConfidence, status (UPLOADED→…→VALIDATED/FLAGGED/REJECTED), issued/expires, and its ground truth.</td></tr>
+<tr><td><strong>DocumentGroundTruth</strong></td><td>The known answer key behind a synthetic document: fields, injectedDefects, generatorSeed — the basis for the §7.B eval harness.</td></tr>
+<tr><td><strong>Driver / Vehicle / Trip</strong></td><td>Operational entities under a partner: drivers (license/permit numbers + expiry, status), vehicles (plate, VIN, make/model/year, registration/insurance/inspection validity, status, addedAt), trips (driver/vehicle, started/ended, distance, fare in minor units, zone, city).</td></tr>
+<tr><td><strong>Validation / CrossCheck</strong></td><td>B1/B2 results: a validation (ruleId, scope, outcome PASS/FAIL/WARN/NOT_APPLICABLE, severity, message, evidence, confidence) and a cross-check (checkId, two docs, field, valueA/valueB, outcome MATCH/MISMATCH/INDETERMINATE, confidence).</td></tr>
+<tr><td><strong>RiskAssessment</strong></td><td>A risk snapshot: ruleset version, score, band, factors, explanation, <code>isCurrent</code>.</td></tr>
+<tr><td><strong>ComplianceEvent</strong></td><td>Monitoring events: type (STATE_CHANGE, EXPIRY_FORECAST, DRIFT_DETECTED, RENEWAL, REVALIDATION, RULESET_REFLAG, HUMAN_ACTION, ALERT), severity, title, detail, occurred/due/resolved.</td></tr>
+<tr><td><strong>PipelineRun / PipelineStage</strong></td><td>The live stepper's source: a run (surface, linked entity, status QUEUED→RUNNING→AWAITING_REVIEW→COMPLETED/FAILED, currentStage, elapsedMs) and its ordered stages (status, progressPct, note, output, confidence, blockReason, durationMs). Unique on (runId, ordering).</td></tr>
+<tr><td><strong>AuditLog</strong></td><td>Append-only, integer-ordered, hash-chained: actor (HUMAN/AI/SYSTEM), action, entity, before/after, AI metadata (model, promptVersion, costMicroUsd, confidence, aiCallId), prevHash, hash, timestamp.</td></tr>
+<tr><td><strong>AiCallLog</strong></td><td>The cost ledger: linked entity/run, agent, stage, model, promptId/Version, tokens in/out, cache tokens, latency, costMicroUsd, confidence, requestHash, ok/error.</td></tr>
+<tr><td><strong>User / Session</strong></td><td>Auth: user (email, name, bcrypt passwordHash, legacy role, assigned <code>roles[]</code>, isActive) and session (hashed token, expiry).</td></tr>
+<tr><td><strong>AppMeta</strong></td><td>Key/value JSON store for settings, the secret bag (Anthropic key, API token hashes), and the synthetic <code>seedAnchor</code> date.</td></tr>
+</table>
+
+<!-- ================= PART VIII ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part VIII</div>
+  <h1>API Reference</h1>
+  <div class="rule"></div>
+  <p>Every route handler. All run on the Node runtime, force-dynamic. Authenticated routes use <code>guard()</code> (returns the session user or a 401); a handful add explicit role/permission checks.</p>
+</div>
+
+<h2>8.1 Response envelope</h2>
+<p>Handlers return <code>{ ok: true, data }</code> or <code>{ ok: false, error }</code> with an appropriate status. Human-in-the-loop is structurally enforced: no API path lets AI reach a binding state — APPROVED/REJECTED/CONDITIONS_APPLIED/SUSPENDED_RECOMMENDED/ACTIVATED occur only in the decision/activate/reject handlers via a HUMAN actor.</p>
+
+<h2>8.2 Endpoints</h2>
+<table>
+<tr><th style="width:8%">Method</th><th style="width:34%">Path</th><th>Purpose</th></tr>
+<tr><td>POST</td><td><code>/api/auth/login</code></td><td>Email/password login; sets session + role cookies.</td></tr>
+<tr><td>POST</td><td><code>/api/auth/logout</code></td><td>Deletes the session, clears cookies.</td></tr>
+<tr><td>POST</td><td><code>/api/auth/role</code></td><td>Switch the active role (must be assigned); audits the switch.</td></tr>
+<tr><td>POST</td><td><code>/api/assistant</code></td><td>Grounded structured answer.</td></tr>
+<tr><td>GET</td><td><code>/api/assistant/preview?href=</code></td><td>Live record popover for a citation.</td></tr>
+<tr><td>POST</td><td><code>/api/assistant/stream</code></td><td>Token-by-token streamed answer + trailing data block.</td></tr>
+<tr><td>POST</td><td><code>/api/authority-requests/[id]/process</code></td><td>Start (or resume) the ARR pipeline (202 + runId).</td></tr>
+<tr><td>POST</td><td><code>/api/authority-requests/[id]/decision</code></td><td>Human action: approve / reject / request_changes / regenerate / clarify.</td></tr>
+<tr><td>GET</td><td><code>/api/authority-requests/[id]/export?format=</code></td><td>Export the report as PDF or JSON.</td></tr>
+<tr><td>POST</td><td><code>/api/partners/[id]/process</code></td><td>Start (or resume) the B1 onboarding pipeline.</td></tr>
+<tr><td>POST</td><td><code>/api/partners/[id]/decision</code></td><td>Human onboarding decision: approve / approve_with_conditions / reject / regenerate.</td></tr>
+<tr><td>POST</td><td><code>/api/partners/[id]/monitoring/decision</code></td><td>Human monitoring action: remediate / apply_conditions / recommend_suspend / clear.</td></tr>
+<tr><td>POST</td><td><code>/api/partners/[id]/monitoring/revalidate</code></td><td>Re-extract renewed documents and re-run monitoring.</td></tr>
+<tr><td>POST</td><td><code>/api/monitoring/sweep</code></td><td>Run the monitoring sweep across the portfolio (or one market).</td></tr>
+<tr><td>GET</td><td><code>/api/cron/monitoring-sweep</code></td><td>Cron-guarded portfolio sweep.</td></tr>
+<tr><td>GET</td><td><code>/api/cron/resume-pipelines</code></td><td>Cron-guarded resume of stalled runs.</td></tr>
+<tr><td>POST</td><td><code>/api/pipelines/[runId]/advance</code></td><td>Advance one pipeline stage.</td></tr>
+<tr><td>GET</td><td><code>/api/pipelines/[runId]/status</code></td><td>Run + per-stage status for the live stepper.</td></tr>
+<tr><td>POST</td><td><code>/api/regulation-intake/process</code></td><td>Upload a regulation (file or text); start Surface C.</td></tr>
+<tr><td>POST</td><td><code>/api/regulation-intake/[id]/activate</code></td><td>The only path a synthesized ruleset enters the rules table; re-flags affected partners.</td></tr>
+<tr><td>PATCH</td><td><code>/api/regulation-intake/[id]/draft</code></td><td>Save reviewer edits to the quarantined draft (schema-gated).</td></tr>
+<tr><td>POST</td><td><code>/api/regulation-intake/[id]/reject</code></td><td>Reject the import.</td></tr>
+<tr><td>GET</td><td><code>/api/report-fields/[id]/provenance</code></td><td>Resolve a figure to its source rows + originating AI call.</td></tr>
+<tr><td>GET</td><td><code>/api/documents/[...path]</code></td><td>Stream a stored document by storage ref.</td></tr>
+<tr><td>PATCH</td><td><code>/api/settings</code></td><td>Save a settings section (schema-validated).</td></tr>
+<tr><td>POST</td><td><code>/api/settings/anthropic-key</code></td><td>Set/clear the Anthropic key (ADMIN only; never echoed).</td></tr>
+<tr><td>POST / DELETE</td><td><code>/api/settings/api-tokens</code></td><td>Create (reveal-once) / revoke an ingest token (ADMIN only).</td></tr>
+<tr><td>POST</td><td><code>/api/settings/audit-verify</code></td><td>Verify the hash-chained audit log.</td></tr>
+<tr><td>POST / PATCH</td><td><code>/api/settings/users</code></td><td>Create / update users &amp; roles (requires <code>users.manage</code>).</td></tr>
+</table>
+
+<!-- ================= PART IX ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part IX</div>
+  <h1>Frontend, Design System &amp; UX</h1>
+  <div class="rule"></div>
+  <p>The Bolt-styled design language, the app shell, navigation, and the shared component library that make Sentinel look like an internal operations console.</p>
+</div>
+
+<h2>9.1 Design tokens</h2>
+<p>Design tokens live in <code>app/globals.css</code> (Tailwind v4). The brand green is <code>#34D186</code> (full 50–950 scale + hover/active), with light green <code>#BDF4D3</code>, near-black ink <code>#1A1A1A</code>, layered surfaces (white / <code>#f8f9fa</code> / <code>#f1f3f4</code>), and status colours (success green, warning amber, danger red, info blue) each with muted/foreground variants. Typography is Inter (with Geist Mono for data), 4px button / 8–12px card radii, a 4px spacing base, and a subtle two-tier shadow scale. The product ships <strong>dark by default</strong> (the theme is read server-side from a cookie so there is no flash), with a full light theme and a login brand-rail token set. These values were researched from Bolt's live surfaces (Wikipedia brand colours, bolt.eu using Radix + Inter) and recorded in <code>docs/DECISIONS.md</code>; the lightning-bolt mark is an original SVG recreation per the IP guardrail.</p>
+
+<h2>9.2 App shell &amp; navigation</h2>
+<p>The console shell (<code>components/app-shell/</code>) is a sticky left sidebar plus a top bar. The sidebar shows the logo lockup, permission-filtered nav grouped into <strong>Operations</strong> (Home, Authority Requests, Fleet Onboarding, Compliance Monitoring) and <strong>Governance</strong> (Markets &amp; Rules, Regulation Intake, Accuracy, Audit &amp; Cost, Assistant), pinned utility links (Settings, User Guide), and an account dropdown. The top bar shows the active section, a <strong>market filter</strong> select that writes <code>?market=</code> into the URL, an "Ask" button (⌘J) for the assistant, a theme toggle, and a role switcher (a dropdown when the user has multiple assigned roles, switching the active role via the API). The command palette (⌘K) and the floating assistant dock are mounted globally.</p>
+
+<h2>9.3 Shared component library</h2>
+<p>Built on shadcn/ui primitives (accordion, avatar, badge, button, card, checkbox, collapsible, command, dialog, dropdown-menu, input/input-group, label, popover, progress, scroll-area, select, separator, sheet, skeleton, sonner, switch, table, tabs, textarea, tooltip). Sentinel-specific shared components include:</p>
+<ul>
+  <li><strong>PipelineStepper</strong> — starts a pipeline, polls <code>/status</code> every 700ms, drives <code>/advance</code> one stage at a time (up to 14), shows expandable per-stage output and confidence, and refreshes on completion.</li>
+  <li><strong>StatusBadge</strong> — a large status→tone/icon/label map with a spinner for processing states; <strong>SlaCountdownChip</strong> — a live countdown (neutral → amber ≤24h → red overdue); <strong>ConfidenceMeter</strong> — % + band label + bar (never colour-only); <strong>DecisionOutcome</strong> and <strong>TimeSavedBanner/Chip</strong>.</li>
+  <li><strong>Assistant suite</strong> — AssistantDock (floating, animated), ChatThread (streaming bubbles, starter/follow-up chips, markdown + chart + inline citations), the streaming chat hook, CommandPalette, ChatChart (Recharts bar/line/donut), MessageMarkdown (react-markdown + remark-gfm with record-link rewriting), and RecordLink (popover preview).</li>
+  <li><strong>Panels, KpiStat, PageHeader, EmptyState, skeleton loaders</strong>, the SweepButton, the theme toggle, and the original Bolt-style Logo/BoltMark.</li>
+</ul>
+<p>Polish details: skeleton loaders during AI processing, live per-stage progress, smooth transitions, empty/error/not-found states, and a reduced-motion media query. Server data fetching is via Next.js server components; client state uses TanStack Query (5s stale time, retry once) with sonner toasts.</p>
+
+<!-- ================= PART X ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part X</div>
+  <h1>RBAC, Authentication &amp; Security</h1>
+  <div class="rule"></div>
+  <p>Seven roles, sixteen permissions, session-based auth, and the tamper-evident audit chain.</p>
+</div>
+
+<h2>10.1 Authentication &amp; sessions</h2>
+<p>Auth is session-based (<code>lib/auth.ts</code>): an opaque 32-byte token in an httpOnly cookie (<code>sentinel_session</code>), sha256-hashed at rest with a server secret; the active role is held in <code>sentinel_role</code>; sessions last 30 days; passwords are bcrypt-hashed. The session user carries a legacy derived role, the assigned RBAC roles, the active role, and the permissions derived from that active role.</p>
+
+<h2>10.2 Roles &amp; permissions</h2>
+<p>Seven roles (<code>lib/rbac.ts</code>): <strong>admin</strong>, <strong>compliance_reviewer</strong>, <strong>onboarding_officer</strong>, <strong>compliance_monitor</strong>, <strong>regulatory_author</strong>, <strong>authority_liaison</strong>, <strong>auditor</strong>. Sixteen permissions span home, ARR (view/review/export), onboarding (view/decide), monitoring (view/act), rules (view/author), accuracy, audit, assistant, settings (view/manage), and users.manage. Admin holds all; each other role holds a focused subset (e.g. authority_liaison gets ARR view/export, auditor gets read-only across surfaces). Nav links are gated by a permission map, and the Settings RBAC matrix renders the roles × permission-group grid.</p>
+<div class="box gray">
+<span class="lbl">Enforcement note</span>
+<p>Fine-grained RBAC is enforced at the navigation/UI layer and on the settings routes (ADMIN / <code>users.manage</code>). Most action routes enforce authentication via <code>guard()</code>; surface-level permission gating lives in the nav layer. The binding-state invariant (no AI-driven approval/suspension/activation) is enforced independently in the handlers and state machines.</p>
+</div>
+
+<h2>10.3 Audit &amp; secrets</h2>
+<p>Every action is appended to the hash-chained audit log (Part IV); the chain is verifiable on demand. Secrets (the Anthropic API key, ingest token hashes) live in a separate secret bag in <code>AppMeta</code> and are never sent to clients — the key endpoint returns only source + last-4, and ingest tokens are revealed once at creation and stored only as sha256 hashes.</p>
+
+<!-- ================= PART XI ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part XI</div>
+  <h1>Synthetic Data, Seed &amp; Scenarios</h1>
+  <div class="rule"></div>
+  <p>How the six markets, partners, documents, ground truth, and the demonstration scenarios are generated — and the operator scripts around them.</p>
+</div>
+
+<h2>11.1 Seeded data</h2>
+<p>The seed (<code>prisma/seed.ts</code> + <code>prisma/seed-lib/</code>) creates the six markets from their registry rulesets (Estonia starting on v1, with v2 created inactive), two demo users (<code>admin@bolt.eu</code> and <code>reviewer@bolt.eu</code>, password <code>sentinel</code>) with assigned RBAC roles, and a base portfolio of five approved/compliant partners per market. Each partner gets localized names, 2–4 drivers, 2–5 vehicles with market-correct plate formats and validity windows, 30–80 trips over the last 180 days biased to central zones, and the market's required documents rendered as realistic synthetic PDFs.</p>
+
+<h3>Ground truth &amp; synthetic PDFs</h3>
+<p>Every document is rendered from a known ground-truth field map (<code>seed-lib/data.ts</code>) into a full A4 certificate (<code>seed-lib/pdf.ts</code>): seven document kinds with per-kind styling, emblems, validity badges, particulars grids, conditions, and an official-looking footer marked "Synthetic document — not a genuine certificate." Defects can be injected — EXPIRED, NAME_MISMATCH, and LOW_LEGIBILITY (which faintly garbles ~35% of characters to genuinely lower extraction confidence) — and stored alongside as <code>DocumentGroundTruth</code>, the basis for the §7.B eval harness.</p>
+
+<h2>11.2 The demonstration scenarios</h2>
+<p>The seed creates the §11 scenarios that make each surface shine — six ARR requests, four B1 onboarding partners, four B2 monitoring situations, and the Estonia ruleset bump — described per-surface in Part II. A synthetic "as-of" anchor date (default 2026-06-04) is stored so expiries and ambiguities land deterministically.</p>
+
+<h2>11.3 Operator scripts</h2>
+<table>
+<tr><th style="width:30%">Script</th><th>What it does</th></tr>
+<tr><td><code>prisma/warm.ts</code></td><td>Drives all scenarios through the live pipelines so dashboards open populated (costs real tokens).</td></tr>
+<tr><td><code>prepare-full-demo.ts</code></td><td>Resets partners to RECEIVED, clears artifacts, and injects fresh expiry/drift data for a clean demo run.</td></tr>
+<tr><td><code>backfill-b1-artifacts.ts</code></td><td>Recomputes validations/cross-checks/risk/decision for already-decided partners using the real DSL evaluators.</td></tr>
+<tr><td><code>restore-monitoring-portfolio.ts</code></td><td>Restores the B2 portfolio with a realistic risk distribution while keeping a couple of RECEIVED partners per market for B1 demos.</td></tr>
+<tr><td><code>rerender-docs.ts</code></td><td>Re-renders every document PDF with the type-specific renderer, preserving DB state.</td></tr>
+<tr><td><code>validate-rulesets.ts</code> / <code>verify-*.ts</code></td><td>Load every ruleset through the registry, and end-to-end verifiers that drive ARR / B1 / regulation-intake / assistant live and print stage results, figures, confidence and per-call cost.</td></tr>
+</table>
+
+<!-- ================= PART XII ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part XII</div>
+  <h1>Tech Stack, Deployment &amp; Operations</h1>
+  <div class="rule"></div>
+  <p>The production stack, the Next.js 16 conventions the codebase follows, and how it deploys and runs.</p>
+</div>
+
+<h2>12.1 Stack</h2>
+<p>Next.js 16 (App Router) · TypeScript (strict) · Tailwind v4 · shadcn/ui · Recharts · TanStack Query · Prisma 6 · SQLite (dev) / Turso libSQL (prod) via the Prisma driver adapter · Anthropic Claude (Haiku/Sonnet/Opus tiers, native PDF/image, Structured Outputs) · Vercel Blob storage · pdfkit · bcryptjs · Zod 4 · React 19. Deployable on Vercel.</p>
+
+<h2>12.2 Next.js 16 conventions</h2>
+<p>The codebase follows the bundled Next.js 16 rules (<code>AGENTS.md</code>): Turbopack is the default (no custom webpack config), all request-time APIs are async (<code>await</code> on <code>cookies()</code>, <code>headers()</code>, <code>params</code>, <code>searchParams</code>), DB/session routes are <code>runtime = "nodejs"</code> + <code>dynamic = "force-dynamic"</code> (Prisma, the Anthropic SDK and pdfkit need the Node runtime, never Edge), long work uses <code>after()</code> to schedule the next pipeline stage after the 202 response, and auth middleware uses the <code>proxy.ts</code> convention.</p>
+
+<h2>12.3 Deployment &amp; ops</h2>
+<p>Local: <code>npm install</code>, set <code>ANTHROPIC_API_KEY</code>, <code>npx prisma migrate dev</code>, <code>npm run db:seed</code>, <code>npm run dev</code>. Production (Vercel + Turso + Blob): set <code>TURSO_DATABASE_URL</code>, <code>TURSO_AUTH_TOKEN</code>, <code>BLOB_READ_WRITE_TOKEN</code>, <code>SESSION_SECRET</code>, <code>ADMIN_TOKEN</code>, <code>CRON_SECRET</code> and <code>SEED_ANCHOR</code>, apply the schema to Turso, deploy, and seed via the admin endpoint. Two Vercel crons run the B2 monitoring sweep and the stalled-pipeline resume sweeper; both are also triggerable in-app.</p>
+
+<!-- ================= PART XIII ================= -->
+<div class="partsep">
+  <div class="eyebrow">Part XIII</div>
+  <h1>Appendices</h1>
+  <div class="rule"></div>
+  <p>Status enumerations, a glossary, and the repository map.</p>
+</div>
+
+<h2>13.1 Status enumerations</h2>
+<table>
+<tr><th style="width:24%">Domain</th><th>Values</th></tr>
+<tr><td>ARR status</td><td>RECEIVED, PROCESSING, PENDING_REVIEW, APPROVED, REJECTED, NEEDS_CLARIFICATION, DONE</td></tr>
+<tr><td>Partner (onboarding)</td><td>RECEIVED, PROCESSING, PENDING_REVIEW, APPROVED, CONDITIONS_APPLIED, REJECTED, NEEDS_CLARIFICATION</td></tr>
+<tr><td>Monitoring</td><td>COMPLIANT, EXPIRING_SOON, DRIFT_DETECTED, PENDING_REVIEW, REMEDIATED, CONDITIONS_APPLIED, SUSPENDED_RECOMMENDED</td></tr>
+<tr><td>Document</td><td>UPLOADED, EXTRACTING, EXTRACTED, VALIDATED, FLAGGED, REJECTED</td></tr>
+<tr><td>Pipeline run / stage</td><td>QUEUED, RUNNING, AWAITING_REVIEW, COMPLETED, FAILED / PENDING, RUNNING, DONE, BLOCKED, FAILED, SKIPPED</td></tr>
+<tr><td>Regulation import</td><td>RECEIVED, PROCESSING, PENDING_REVIEW, ACTIVATED, REJECTED, NEEDS_EDIT, DONE</td></tr>
+<tr><td>Validation / cross-check</td><td>PASS, FAIL, WARN, NOT_APPLICABLE / MATCH, MISMATCH, INDETERMINATE</td></tr>
+<tr><td>Severity / risk band</td><td>INFO, LOW, MEDIUM, HIGH, CRITICAL / LOW, MEDIUM, HIGH</td></tr>
+<tr><td>Field classification / constraint action</td><td>ANSWERABLE, CAUTIONED, OUT_OF_SCOPE / allow, mask, aggregate, omit, block</td></tr>
+</table>
+
+<h2>13.2 Glossary</h2>
+<table>
+<tr><th style="width:22%">Term</th><th>Meaning</th></tr>
+<tr><td>Surface</td><td>One of the four user-facing workflows (A / B1 / B2 / C) configured over the shared engine.</td></tr>
+<tr><td>Agent</td><td>A typed LLM operation routed to a model tier and backed by a versioned prompt.</td></tr>
+<tr><td>Ruleset</td><td>The complete, Zod-validated machine-readable description of a market's compliance rules.</td></tr>
+<tr><td>Provenance</td><td>The source row ids + prompt version behind every generated figure.</td></tr>
+<tr><td>Confidence gating</td><td>The §7.B policy that flags or blocks low-confidence/unverified outputs for human review.</td></tr>
+<tr><td>Re-flag</td><td>Moving partners back to review when their market's ruleset changes to a newer version.</td></tr>
+<tr><td>Time-saved contrast</td><td>The manual-baseline vs actual-elapsed device surfaced throughout the product.</td></tr>
+</table>
+
+<h2>13.3 Repository map</h2>
+<pre>app/         Next.js App Router — (console) screens, (auth) login, (guide), api/ routes
+components/  shared UI (ui/ shadcn primitives; brand/; app-shell/; assistant/; shared/; monitoring/)
+engine/
+  llm/       centralized Claude client, model router, prompt registry, cost ledger
+  intake rules retrieval generation validation risk explain   the AI stages
+  compliance/  §7.A constraint framework
+  accuracy/    §7.B confidence model, gating, ground-truth eval
+  governance/  hash-chained audit, human-in-the-loop state machines
+  pipeline/    Stage/Context types, re-entrant runner, progress
+  storage/     local-fs + vercel-blob document drivers
+  rules/markets/&lt;CODE&gt;/   the six market rulesets (versioned) + registry
+  types/       shared Zod schemas + TS unions (single source of truth)
+surfaces/    authority-request, fleet-onboarding, fleet-monitoring, regulation-intake, assistant
+lib/         db factory, auth/session, rbac, confidence thresholds, formatters, report-pdf, settings
+prisma/      schema.prisma, seed.ts, seed-lib/ generators, warm.ts
+scripts/     demo/backfill/restore/verify utilities
+docs/        ARCHITECTURE.md, DECISIONS.md</pre>
+
+<div class="box green" style="margin-top:18pt;">
+<span class="lbl">End of document</span>
+<p>Bolt Sentinel — a complete, governed, AI-native Regulatory Operations Platform: four surfaces, fifteen agents, six markets, two critical subsystems, and human-in-the-loop before anything binds. All data synthetic; regulatory details directionally realistic but illustrative.</p>
+</div>
+
+</body>
+</html>

@@ -44,12 +44,14 @@ export function PipelineStepper({
   canStart,
   startLabel = "Run Sentinel pipeline",
   startBlurb = "Run the staged AI pipeline.",
+  className,
 }: {
   processUrl: string;
   initialRunId: string | null;
   canStart: boolean;
   startLabel?: string;
   startBlurb?: string;
+  className?: string;
 }) {
   const router = useRouter();
   const [runId, setRunId] = useState<string | null>(initialRunId);
@@ -89,6 +91,20 @@ export function PipelineStepper({
     [fetchStatus, router],
   );
 
+  // When the server hands us a different run (e.g. after Regenerate / clarify
+  // re-runs the pipeline and the page refreshes), adopt it and re-arm the
+  // auto-refresh — otherwise the stepper keeps polling the stale run and the
+  // new one never advances until a full page reload.
+  useEffect(() => {
+    setRunId((current) => {
+      if (initialRunId && initialRunId !== current) {
+        refreshedRef.current = false;
+        return initialRunId;
+      }
+      return current;
+    });
+  }, [initialRunId]);
+
   useEffect(() => {
     if (!runId) return;
     let cancelled = false;
@@ -107,11 +123,19 @@ export function PipelineStepper({
   }, [runId, fetchStatus, drive]);
 
   useEffect(() => {
-    if (status && ["COMPLETED", "FAILED", "AWAITING_REVIEW"].includes(status.status) && pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
+    if (status && ["COMPLETED", "FAILED", "AWAITING_REVIEW"].includes(status.status)) {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      // Pull the fresh server-rendered report/status the moment the run ends,
+      // whether this tab drove it or merely polled it — so no manual refresh.
+      if (!refreshedRef.current) {
+        refreshedRef.current = true;
+        router.refresh();
+      }
     }
-  }, [status]);
+  }, [status, router]);
 
   async function start() {
     setStarting(true);
@@ -124,7 +148,7 @@ export function PipelineStepper({
 
   if (!runId && canStart) {
     return (
-      <div className="panel flex items-center justify-between gap-3 border-brand-200 bg-brand-50/70 p-4">
+      <div className={cn("panel flex items-center justify-between gap-3 border-brand-200 bg-brand-50/70 p-4", className)}>
         <div className="min-w-0">
           <div className="text-[13px] font-semibold text-ink">Ready to process</div>
           <div className="meta mt-0.5 leading-relaxed">{startBlurb}</div>
@@ -141,7 +165,7 @@ export function PipelineStepper({
   const stages = status?.stages ?? [];
   const doneCount = stages.filter((s) => s.status === "DONE").length;
   return (
-    <div className="panel overflow-hidden">
+    <div className={cn("panel overflow-hidden", className)}>
       <div className="panel-head">
         <h2 className="panel-title">AI pipeline</h2>
         <span className="meta tabular-data">

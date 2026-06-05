@@ -12,7 +12,7 @@ type LogoMode = "lockup" | "mark" | "stacked";
 const PX: Record<LogoSize, number> = { sm: 20, md: 24, lg: 32 };
 const TEXT: Record<LogoSize, string> = { sm: "text-sm", md: "text-base", lg: "text-lg" };
 
-export function BoltMark({ size = 24, className }: { size?: number; className?: string }) {
+export function BoltMark({ size = 24, className, fill = "var(--color-brand-500)" }: { size?: number; className?: string; fill?: string }) {
   return (
     <svg
       width={size}
@@ -22,11 +22,8 @@ export function BoltMark({ size = 24, className }: { size?: number; className?: 
       className={className}
       aria-hidden="true"
     >
-      {/* Angular lightning bolt: sharp diagonal zigzag, solid brand-green fill. */}
-      <path
-        d="M14.5 2 L4 13.6 h6.2 l-1 8.4 L20 10.2 h-6.2 z"
-        fill="var(--color-brand-500)"
-      />
+      {/* Angular lightning bolt: sharp diagonal zigzag. */}
+      <path d="M14.5 2 L4 13.6 h6.2 l-1 8.4 L20 10.2 h-6.2 z" fill={fill} />
     </svg>
   );
 }

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Inbox, Truck, ShieldCheck, Scale, FileUp, Target, ScrollText, Sparkles, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Inbox, Truck, ShieldCheck, Scale, FileUp, Target, ScrollText, Sparkles, Settings, BookOpen, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -21,7 +21,13 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const NAV_GROUPS = ["Operations", "Governance"] as const;
 
+/** Utility links rendered as their own block below the grouped nav. */
+export const UTILITY_NAV: NavItem[] = [
+  { href: "/settings", label: "Settings", icon: Settings, group: "System" },
+  { href: "/guide", label: "User Guide", icon: BookOpen, group: "System" },
+];
+
 export function sectionForPath(pathname: string): string | null {
-  const match = NAV_ITEMS.find((n) => pathname === n.href || pathname.startsWith(n.href + "/"));
+  const match = [...NAV_ITEMS, ...UTILITY_NAV].find((n) => pathname === n.href || pathname.startsWith(n.href + "/"));
   return match?.label ?? null;
 }

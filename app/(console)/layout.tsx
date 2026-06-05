@@ -18,7 +18,10 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
 
   return (
     <Suspense>
-      <AppShell user={user} markets={markets.map((m) => ({ code: m.code, country: m.country, cities: (m.cities as string[]) ?? [] }))}>
+      <AppShell
+        user={{ name: user.name, email: user.email, role: user.role, roles: user.roles, activeRole: user.activeRole, permissions: user.permissions }}
+        markets={markets.map((m) => ({ code: m.code, country: m.country, cities: (m.cities as string[]) ?? [] }))}
+      >
         {children}
       </AppShell>
     </Suspense>

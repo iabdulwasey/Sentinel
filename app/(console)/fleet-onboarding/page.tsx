@@ -15,10 +15,13 @@ export default async function FleetOnboardingPage({ searchParams }: { searchPara
   const { market } = await searchParams;
   const marketId = await resolveMarketId(market);
   const partners = await db.fleetPartner.findMany({
-    where: { deletedAt: null, status: { in: QUEUE }, ...(marketId ? { marketId } : {}) },
+    where: { deletedAt: null, ...(marketId ? { marketId } : {}) },
     include: { market: true, _count: { select: { documents: true, vehicles: true, drivers: true } } },
     orderBy: [{ createdAt: "desc" }],
   });
+  // keep partners awaiting a decision on top; decided ones (approved/conditions/rejected) stay visible below
+  const sorted = [...partners].sort((a, b) => Number(QUEUE.includes(b.status)) - Number(QUEUE.includes(a.status)));
+  const awaiting = partners.filter((p) => QUEUE.includes(p.status)).length;
 
   return (
     <div className="mx-auto max-w-7xl space-y-5">
@@ -30,7 +33,7 @@ export default async function FleetOnboardingPage({ searchParams }: { searchPara
       {partners.length === 0 ? (
         <EmptyState icon={Truck} title="Onboarding queue is empty" description="No partners awaiting onboarding in this market." />
       ) : (
-        <Panel title={`Queue · ${partners.length} awaiting`} flush>
+        <Panel title={`Partners · ${awaiting} awaiting · ${partners.length} total`} flush>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
@@ -44,7 +47,7 @@ export default async function FleetOnboardingPage({ searchParams }: { searchPara
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {partners.map((p) => (
+              {sorted.map((p) => (
                 <tr key={p.id} className="group transition-colors hover:bg-surface-sunken/40">
                   <td className="px-4 py-3">
                     <Link href={`/fleet-onboarding/${p.id}`} className="font-medium text-ink group-hover:text-brand-700">

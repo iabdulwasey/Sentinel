@@ -3,9 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { db } from "../../lib/db";
 import type { AgentName } from "../types/enums";
-import { routeModel, type RouteHints } from "./router";
+import { routeTier, type RouteHints } from "./router";
 import { getPrompt, renderTemplate } from "./prompts";
-import { computeCostMicroUsd, TIER_TIMEOUT_MS, type ModelId, MODEL_BY_TIER } from "./models";
+import { computeCostMicroUsd, TIER_TIMEOUT_MS, type ModelId } from "./models";
+import { getSettings, getAnthropicKey } from "../../lib/settings";
 
 /**
  * The ONE place the Anthropic SDK is used. Resolves model (router) + prompt (registry),
@@ -14,11 +15,14 @@ import { computeCostMicroUsd, TIER_TIMEOUT_MS, type ModelId, MODEL_BY_TIER } fro
  */
 
 let _client: Anthropic | null = null;
-function client(): Anthropic {
-  if (_client) return _client;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set — required for live AI operations.");
-  _client = new Anthropic({ apiKey });
+let _clientKey: string | null = null;
+async function getClient(): Promise<Anthropic> {
+  // A key set in Settings → AI & Models overrides the env var (see lib/settings).
+  const { key } = await getAnthropicKey();
+  if (!key) throw new Error("No Anthropic API key — set ANTHROPIC_API_KEY or add one in Settings → AI & Models.");
+  if (_client && _clientKey === key) return _client;
+  _client = new Anthropic({ apiKey: key });
+  _clientKey = key;
   return _client;
 }
 
@@ -76,8 +80,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function callLlm<T = string>(args: CallLlmArgs<T>): Promise<LlmResult<T>> {
   const prompt = getPrompt(args.promptId, args.promptVersion);
-  const model = routeModel(args.agent, args.hints, args.modelOverride);
-  const tier = (Object.keys(MODEL_BY_TIER) as Array<keyof typeof MODEL_BY_TIER>).find((t) => MODEL_BY_TIER[t] === model) ?? "balanced";
+  // Settings drive the tier→model mapping + prompt caching (Settings → AI & Models).
+  const settings = await getSettings();
+  const tier = routeTier(args.agent, args.hints);
+  const model = args.modelOverride ?? settings.ai.tiers[tier];
   const maxTokens = args.maxTokens ?? 4096;
 
   const systemText = args.cacheableContext
@@ -109,15 +115,18 @@ export async function callLlm<T = string>(args: CallLlmArgs<T>): Promise<LlmResu
     .digest("hex")
     .slice(0, 32);
 
+  const caching = settings.ai.promptCaching;
+  const anthropic = await getClient();
+
   const start = Date.now();
   let lastErr: unknown;
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const res = await client().messages.create(
+      const res = await anthropic.messages.create(
         {
           model,
           max_tokens: maxTokens,
-          system: [{ type: "text", text: systemText, cache_control: { type: "ephemeral" } }],
+          system: [{ type: "text", text: systemText, ...(caching ? { cache_control: { type: "ephemeral" as const } } : {}) }],
           messages: [{ role: "user", content: userContent }],
           ...(tools ? { tools, tool_choice: { type: "tool" as const, name: toolName } } : {}),
         },
@@ -206,4 +215,70 @@ export async function callLlm<T = string>(args: CallLlmArgs<T>): Promise<LlmResu
     })
     .catch(() => {});
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+}
+
+/**
+ * Streaming text generation (no tool) — yields text deltas as they arrive. Used by the assistant
+ * for a live, token-by-token answer. Routing, key, caching, and the cost ledger work the same.
+ */
+export async function* callLlmStream(args: Omit<CallLlmArgs<string>, "schema" | "schemaName">): AsyncGenerator<string, void, unknown> {
+  const prompt = getPrompt(args.promptId, args.promptVersion);
+  const settings = await getSettings();
+  const tier = routeTier(args.agent, args.hints);
+  const model = args.modelOverride ?? settings.ai.tiers[tier];
+  const maxTokens = args.maxTokens ?? 2048;
+
+  const systemText = args.cacheableContext ? `${prompt.system}\n\n--- CONTEXT ---\n${args.cacheableContext}` : prompt.system;
+  const userText = renderTemplate(prompt.user, args.vars ?? {});
+  const userContent: Anthropic.ContentBlockParam[] = [];
+  for (const d of args.documents ?? []) {
+    if (d.mediaType === "application/pdf") userContent.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: d.base64 } });
+    else userContent.push({ type: "image", source: { type: "base64", media_type: d.mediaType as "image/png" | "image/jpeg", data: d.base64 } });
+  }
+  userContent.push({ type: "text", text: userText });
+
+  const start = Date.now();
+  const anthropic = await getClient();
+  const stream = anthropic.messages.stream({
+    model,
+    max_tokens: maxTokens,
+    system: [{ type: "text", text: systemText, ...(settings.ai.promptCaching ? { cache_control: { type: "ephemeral" as const } } : {}) }],
+    messages: [{ role: "user", content: userContent }],
+  });
+
+  for await (const ev of stream) {
+    if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") yield ev.delta.text;
+  }
+
+  try {
+    const final = await stream.finalMessage();
+    const usage = {
+      inputTokens: final.usage.input_tokens ?? 0,
+      outputTokens: final.usage.output_tokens ?? 0,
+      cacheReadTokens: final.usage.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: final.usage.cache_creation_input_tokens ?? 0,
+    };
+    await db.aiCallLog.create({
+      data: {
+        authorityRequestId: args.link?.authorityRequestId,
+        partnerId: args.link?.partnerId,
+        documentId: args.link?.documentId,
+        pipelineRunId: args.link?.pipelineRunId,
+        agent: args.agent,
+        stage: args.stage,
+        model,
+        promptId: prompt.id,
+        promptVersion: `v${prompt.version}`,
+        tokensIn: usage.inputTokens,
+        tokensOut: usage.outputTokens,
+        cacheReadTokens: usage.cacheReadTokens,
+        cacheWriteTokens: usage.cacheWriteTokens,
+        latencyMs: Date.now() - start,
+        costMicroUsd: computeCostMicroUsd(model, usage),
+        ok: true,
+      },
+    }).catch(() => {});
+  } catch {
+    /* ledger best-effort */
+  }
 }

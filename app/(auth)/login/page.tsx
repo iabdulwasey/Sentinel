@@ -8,13 +8,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const DEMO = [
-  { email: "reviewer@bolt.eu", role: "Compliance Reviewer", initials: "CR", icon: ShieldCheck },
-  { email: "admin@bolt.eu", role: "Administrator", initials: "AD", icon: UserCog },
+  { email: "admin@bolt.eu", role: "Administrator", initials: "DA", icon: UserCog, recommended: true },
+  { email: "reviewer@bolt.eu", role: "Compliance Reviewer", initials: "RR", icon: ShieldCheck, recommended: false },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("reviewer@bolt.eu");
+  const [email, setEmail] = useState("admin@bolt.eu");
   const [password, setPassword] = useState("sentinel");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <span style={{ color: "var(--rail-accent)", WebkitTextFillColor: "var(--rail-accent)" }}>on autopilot.</span>
           </h1>
           <p className="mt-5 max-w-[460px] text-[1.02rem] font-light leading-relaxed" style={{ color: "var(--rail-text-muted)" }}>
-            Answer authority requests, onboard fleet partners, and monitor a live portfolio across six markets — with provenance, confidence, and a human in the loop on every decision.
+            Answer authority requests, onboard fleet partners, and monitor a live portfolio across markets — with provenance, confidence, and a human in the loop on every decision.
           </p>
           <div className="mt-7 flex flex-wrap gap-2.5 text-[0.78rem]">
             {["GDPR", "NDPA", "POPIA"].map((r) => (
@@ -150,9 +150,8 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <div className="mb-1.5 flex items-center justify-between">
+                <div className="mb-1.5">
                   <label htmlFor="password" className="block text-[0.8rem] font-medium text-ink">Password</label>
-                  <span className="text-[0.7rem] text-ink-muted">Demo · no reset needed</span>
                 </div>
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
@@ -219,7 +218,10 @@ export default function LoginPage() {
                   >
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-[0.72rem] font-semibold tracking-wide text-brand-700">{u.initials}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5 text-[0.82rem] font-medium text-ink"><Icon className="size-3.5 text-brand-600" /> {u.role}</span>
+                      <span className="flex items-center gap-1.5 text-[0.82rem] font-medium text-ink">
+                        <Icon className="size-3.5 shrink-0 text-brand-600" /> {u.role}
+                        {u.recommended && <span className="rounded-full bg-brand-500/15 px-1.5 py-0.5 text-[0.58rem] font-semibold uppercase tracking-wide text-brand-700">Default</span>}
+                      </span>
                       <span className="block truncate font-mono text-[0.68rem] text-ink-muted">{u.email}</span>
                     </span>
                     {selected ? (

@@ -10,13 +10,15 @@ import { ConfidenceMeter } from "@/components/shared/confidence-meter";
 import { PipelineStepper } from "./_components/pipeline-stepper";
 import { ProvenanceFigure } from "./_components/provenance-figure";
 import { ReviewActions } from "./_components/review-actions";
+import { ClarificationPanel } from "./_components/clarification-panel";
+import { DecisionOutcome } from "@/components/shared/decision-outcome";
 import type { RequestIntent, CompliancePlan, GeneratedReport, SelfValidation, ConstraintDecision } from "@/engine/types/ai";
 
 export const dynamic = "force-dynamic";
 
 export default async function RequestWorkspace({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const req = await db.authorityRequest.findUnique({ where: { id }, include: { market: true, reportFields: { orderBy: { ordering: "asc" } } } });
+  const req = await db.authorityRequest.findUnique({ where: { id }, include: { market: true, reviewedBy: true, reportFields: { orderBy: { ordering: "asc" } } } });
   if (!req) notFound();
 
   const latestRun = await db.pipelineRun.findFirst({ where: { authorityRequestId: id }, orderBy: { createdAt: "desc" } });
@@ -66,11 +68,16 @@ export default async function RequestWorkspace({ params }: { params: Promise<{ i
             <StatusBadge status={req.status} size="md" />
           </div>
         </div>
-        {req.statusReason && req.status === "NEEDS_CLARIFICATION" && (
-          <div className="flex items-start gap-2 rounded-md border border-warning/25 bg-warning-muted px-3 py-2.5 text-sm text-warning">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            <span><span className="font-medium">Clarification needed:</span> {req.statusReason}</span>
-          </div>
+        {req.status === "NEEDS_CLARIFICATION" && (
+          <ClarificationPanel requestId={req.id} reason={req.statusReason} canRespond />
+        )}
+        {(req.status === "APPROVED" || req.status === "REJECTED" || req.status === "DONE") && (
+          <DecisionOutcome
+            outcome={req.status === "APPROVED" ? "approved" : req.status === "REJECTED" ? "rejected" : "done"}
+            reason={req.reviewNote ?? req.statusReason}
+            by={req.reviewedBy?.name}
+            at={req.decidedAt ? req.decidedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : null}
+          />
         )}
       </div>
 
@@ -78,7 +85,7 @@ export default async function RequestWorkspace({ params }: { params: Promise<{ i
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* left rail */}
-        <div className="space-y-6 lg:col-span-5">
+        <div className="space-y-6 lg:col-span-4">
           <PipelineStepper
             processUrl={`/api/authority-requests/${req.id}/process`}
             initialRunId={initialRunId}
@@ -109,6 +116,7 @@ export default async function RequestWorkspace({ params }: { params: Promise<{ i
 
           {plan && (
             <Panel title={`Compliance checklist · ${plan.checklist.length} items`} icon={ListChecks}>
+              <div className="scroll-slim max-h-[440px] overflow-y-auto pr-1">
               <ul className="space-y-3">
                 {plan.checklist.map((item) => {
                   const res = checklistById.get(item.id);
@@ -132,14 +140,18 @@ export default async function RequestWorkspace({ params }: { params: Promise<{ i
                   </div>
                 ))}
               </div>
+              </div>
             </Panel>
           )}
         </div>
 
         {/* right: report */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="space-y-6 lg:col-span-8">
           {report ? (
-            <Panel title="Generated report" icon={FileText} actions={<ReviewActions requestId={req.id} status={req.status} />}>
+            <Panel title="Generated report" icon={FileText}>
+              <div className="mb-4 border-b border-border pb-4">
+                <ReviewActions requestId={req.id} status={req.status} />
+              </div>
               <article className="rounded-md border border-border bg-surface-subtle p-6">
                 <div className="flex items-center gap-2 border-b border-border pb-2.5">
                   <span className="eyebrow !tracking-[0.12em] text-brand-700">Bolt Sentinel</span>

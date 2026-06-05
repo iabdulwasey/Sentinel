@@ -288,10 +288,20 @@ export const CitationSchema = z.object({
 });
 export type Citation = z.infer<typeof CitationSchema>;
 
+export const ChartSpecSchema = z.object({
+  type: z.enum(["bar", "line", "donut"]),
+  title: z.string(),
+  unit: z.string().nullish(),
+  data: z.array(z.object({ name: z.string(), value: z.number() })).min(1),
+});
+export type ChartSpec = z.infer<typeof ChartSpecSchema>;
+
 export const GroundedAnswerSchema = z.object({
   answer: z.string(),
   citations: z.array(CitationSchema).default([]),
   grounded: z.boolean().describe("False if no supporting data was found — surface a caveat."),
+  suggestions: z.array(z.string()).default([]).describe("2–4 short, specific follow-up questions the user is likely to ask next, answerable from the platform's data."),
+  chart: ChartSpecSchema.nullish().describe("A small chart when the answer is quantitative and benefits from one (e.g. counts by market, status breakdown). Omit otherwise."),
   confidence: z.number().min(0).max(1),
 });
 export type GroundedAnswer = z.infer<typeof GroundedAnswerSchema>;

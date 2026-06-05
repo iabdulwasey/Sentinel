@@ -43,7 +43,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
         title="Operations overview"
-        description={`Regulatory operations across ${market ? "the selected market" : "all six markets"}, as of ${asOf.toISOString().slice(0, 10)}.`}
+        description={`Regulatory operations across ${market ? "the selected market" : "all markets"}, as of ${new Date().toISOString().slice(0, 10)}.`}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">

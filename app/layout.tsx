@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
 });
+
+// Force desktop layout on mobile — no responsive scaling.
+export const viewport: Viewport = {
+  width: 1280,
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {

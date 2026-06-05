@@ -3,7 +3,7 @@ import { db } from "../lib/db";
 import { listMarketCodes, getRulesetEntry, listAllEntries } from "../engine/rules/registry";
 import type { MarketRuleset, RequiredDocumentSpec } from "../engine/types/ruleset";
 import { storage } from "../engine/storage";
-import { renderDocumentPdf, type PdfFieldRow } from "./seed-lib/pdf";
+import { renderDocumentPdf, buildPdfSpec } from "./seed-lib/pdf";
 import {
   rng,
   pick,
@@ -69,8 +69,8 @@ async function resetDb() {
 async function seedUsers() {
   const password = "sentinel";
   const hash = bcrypt.hashSync(password, 10);
-  await db.user.create({ data: { email: "admin@bolt.eu", name: "Asha Admin", role: "ADMIN", passwordHash: hash } });
-  await db.user.create({ data: { email: "reviewer@bolt.eu", name: "Rui Reviewer", role: "REVIEWER", passwordHash: hash } });
+  await db.user.create({ data: { email: "admin@bolt.eu", name: "Deb (Admin)", role: "ADMIN", roles: ["admin", "compliance_reviewer", "regulatory_author", "authority_liaison", "auditor"], passwordHash: hash } });
+  await db.user.create({ data: { email: "reviewer@bolt.eu", name: "Rui Reviewer", role: "REVIEWER", roles: ["compliance_reviewer", "onboarding_officer", "compliance_monitor", "auditor"], passwordHash: hash } });
   return { password };
 }
 
@@ -288,16 +288,23 @@ async function createPartner(opts: PartnerOptions) {
     };
     const gt = buildGroundTruth(spec, ctx);
 
-    const rows: PdfFieldRow[] = spec.expectedFields.map((f) => ({ label: f.label, value: gt[f.key] ?? "" }));
-    const pdf = await renderDocumentPdf({
-      documentLabel: spec.label,
-      regulatorName: issuer,
-      country: ruleset.country,
-      refLine: `Ref: ${spec.docType}/${ref}`,
-      rows,
-      lowLegibility: defect === "LOW_LEGIBILITY",
-      sealText: "Synthetic document generated for the Bolt Sentinel demo. Not a real certificate.",
-    });
+    const pdf = await renderDocumentPdf(
+      buildPdfSpec({
+        docType: spec.docType,
+        label: spec.label,
+        country: ruleset.country,
+        authority: issuer,
+        expectedFields: spec.expectedFields,
+        gt,
+        issuedAt: window.issuedAt,
+        expiresAt: window.expiresAt,
+        dateFormat: ruleset.reportFormat.dateFormat,
+        expired: defect === "EXPIRED",
+        reference: `${spec.docType}/${ref}`,
+        lowLegibility: defect === "LOW_LEGIBILITY",
+        partnerName: company,
+      }),
+    );
     const key = `documents/${partner.id}/${spec.docType}.pdf`;
     const stored = await store.put(key, pdf, "application/pdf");
 
@@ -443,15 +450,26 @@ async function main() {
   {
     const renewedKey = `documents/${renewal.id}/VEHICLE_INSURANCE_RENEWED.pdf`;
     const renewedPdf = await renderDocumentPdf({
-      documentLabel: "Ubezpieczenie OC (Renewed)", regulatorName: "PZU S.A.", country: "Poland",
-      refLine: `Ref: VEHICLE_INSURANCE_RENEWED/${renewal.reference}`,
+      kind: "insurance",
+      documentLabel: "Ubezpieczenie OC (Renewed)",
+      authorityName: "PZU S.A.",
+      authoritySubline: "Certificate of motor insurance",
+      country: "Poland",
+      numberLabel: "Policy No.",
+      docNumber: "OC-2026-998877",
+      subject: [
+        { label: "Insured", value: renewal.legalName },
+        { label: "Vehicle", value: "WX 44218" },
+      ],
+      issuedAtText: "02.06.2026",
+      expiresAtText: "30.06.2027",
+      expired: false,
       rows: [
         { label: "Insurer", value: "PZU S.A." },
-        { label: "Policy number", value: "OC-2026-998877" },
+        { label: "Cover", value: "OC (third-party liability)" },
         { label: "Vehicle plate", value: "WX 44218" },
-        { label: "Valid until", value: "30.06.2027" },
       ],
-      sealText: "Synthetic renewed insurance for re-validation demo.",
+      reference: `VEHICLE_INSURANCE_RENEWED/${renewal.reference}`,
     });
     const stored = await store.put(renewedKey, renewedPdf, "application/pdf");
     await db.document.create({

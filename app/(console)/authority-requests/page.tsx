@@ -37,7 +37,7 @@ export default async function AuthorityRequestsPage({ searchParams }: { searchPa
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="th w-32">Reference</th>
+                <th className="th w-44">Reference</th>
                 <th className="th">Request</th>
                 <th className="th w-40">Market</th>
                 <th className="th w-44">Status</th>
@@ -47,7 +47,7 @@ export default async function AuthorityRequestsPage({ searchParams }: { searchPa
             <tbody className="divide-y divide-border">
               {sorted.map((r) => (
                 <tr key={r.id} className="row-link group">
-                  <td className="td">
+                  <td className="td whitespace-nowrap">
                     <Link href={`/authority-requests/${r.id}`} className="tabular-data font-medium text-ink group-hover:text-brand-700">
                       {r.reference}
                     </Link>

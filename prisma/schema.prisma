@@ -611,7 +611,8 @@ model User {
   email        String  @unique
   name         String
   passwordHash String?
-  role         String  @default("REVIEWER") // ADMIN | REVIEWER
+  role         String  @default("REVIEWER") // legacy/derived active tier: ADMIN | REVIEWER
+  roles        Json? // assigned RBAC role keys (string[]); see lib/rbac.ts
   isActive     Boolean @default(true)
 
   sessions   Session[]
