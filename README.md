@@ -7,8 +7,6 @@
 
 Every value-adding stage is AI-driven (Anthropic Claude). Every output is governed: per-field provenance, immutable hash-chained audit, confidence on every figure, and **human-in-the-loop before anything binds**. Two subsystems make governance architectural: a **Compliance-Constraint Framework** (data residency / PII / lawful-basis / retention, enforced and explainable) and an **Accuracy & Confidence Layer** (per-field confidence, gating, figure-vs-source verification, and a ground-truth eval harness over the synthetic corpus).
 
-> ⚠️ **IP guardrail — read this.** "Bolt Sentinel" branding, the green palette, and the lightning-bolt mark are an **approximation of Bolt's design language, recreated for a private demo shown directly to Bolt only.** This is **not** affiliated with or endorsed by Bolt, and the mark here is an original SVG recreation, not Bolt's proprietary logo. Do **not** publish this publicly or present it as Bolt-affiliated. If it ever goes into a public portfolio, swap the mark/name for a neutral brand and label it *"concept built for a Bolt application."* The deployment is `noindex`.
-
 ## Screenshots
 
 _(placeholder — add screenshots of the Home dashboard, an ARR request workspace with the live pipeline stepper, a B1 onboarding workspace with the document viewer, and the B2 monitoring dashboard.)_
